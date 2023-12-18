@@ -4,7 +4,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import javax.imageio.ImageIO;
 
 // Client class 
 class Client {
@@ -14,7 +13,7 @@ class Client {
 		// establish a connection by providing host and port
 		// number
 
-		try (Socket socket = new Socket("localhost", 5555)) {
+		try (Socket socket = new Socket("192.168.21.113", 5555)) {
 
 			// writing to server
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -30,8 +29,6 @@ class Client {
 				String key = command.nextToken().toUpperCase();
 				switch (key) {
 				case "CREATE_GROUP":
-//					String userName = command.nextToken();
-//					String groupName = command.nextToken();
 					out.writeUTF(cmd);
 					out.flush();
 					break;
@@ -90,7 +87,7 @@ class Client {
 		double progress = (double) byteSend / totalFileSize * 100;
 		System.out.printf("Progress: %.2f%%", progress);
 		try {
-            Thread.sleep(5);
+            Thread.sleep(1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

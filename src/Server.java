@@ -111,6 +111,7 @@ class Server {
               System.out.println(fileName);
               long fileSize = in.readLong();
               int bytesRead;
+              long byteReaded = 0;
               byte[] buffer = new byte[4096];
               String destinationPath = currentPath
                 .resolve(groupNameUpload)
@@ -123,7 +124,8 @@ class Server {
                 while (fileSize != 0) {
                   bytesRead = in.read(buffer);
                   bos.write(buffer, 0, bytesRead);
-                  trackProgress(fileSize, bytesRead);
+                  byteReaded += bytesRead;
+                  trackProgress(fileSize, byteReaded);
                   fileSize = fileSize - bytesRead;
                   bos.flush();
                 }
@@ -158,7 +160,7 @@ class Server {
     double progress = (double) byteSend / totalFileSize * 100;
     System.out.printf("Progress: %.2f%%", progress);
     try {
-      Thread.sleep(5);
+      Thread.sleep(1);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
