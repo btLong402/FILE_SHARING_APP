@@ -121,16 +121,17 @@ class Server {
               BufferedOutputStream bos;
               try {
                 bos = new BufferedOutputStream(new FileOutputStream(f));
-                while (fileSize != 0) {
+                long tmp = fileSize;
+                while (tmp != 0) {
                   bytesRead = in.read(buffer);
                   bos.write(buffer, 0, bytesRead);
                   byteReaded += bytesRead;
                   trackProgress(fileSize, byteReaded);
-                  fileSize = fileSize - bytesRead;
+                  tmp = tmp - bytesRead;
                   bos.flush();
                 }
                 System.out.println();
-                System.out.println("Upload successed!");
+                System.out.println("Upload succeed!");
                 bos.close();
               } catch (IOException e) {}
               break;
