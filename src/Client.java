@@ -13,7 +13,7 @@ class Client {
 		// establish a connection by providing host and port
 		// number
 
-		try (Socket socket = new Socket("localhost", 5555)) {
+		try (Socket socket = new Socket("192.168.21.102", 5555)) {
 
 			// writing to server
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
