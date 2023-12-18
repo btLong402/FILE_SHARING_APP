@@ -58,3 +58,46 @@ CREATE TABLE `JoinGroup` (
     FOREIGN KEY (`userId`) REFERENCES `Users`(`userId`),
     FOREIGN KEY (`groupId`) REFERENCES `Groups`(`groupId`)
 );
+DELIMITER //
+
+DELIMITER //
+
+CREATE FUNCTION HashPasswordWithUserName(userName VARCHAR(255), userPassword VARCHAR(255))
+RETURNS VARBINARY(64) DETERMINISTIC
+BEGIN
+    RETURN UNHEX(SHA2(CONCAT(userPassword, HEX(SHA2(userName, 256))), 256));
+END;
+
+CREATE FUNCTION InsertNewUser(userName VARCHAR(255), userPassword VARCHAR(255))
+RETURNS VARCHAR(255) DETERMINISTIC
+BEGIN
+    DECLARE userId VARCHAR(255);
+
+    SELECT userId INTO userId
+    FROM Users
+    WHERE userName = userName;
+
+    IF userId IS NOT NULL THEN
+        RETURN NULL;
+    END IF;
+
+    SET userId = UUID();
+    INSERT INTO Users (userId, userName, passwordHash)
+    VALUES (userId, userName, HEX(HashPasswordWithUserName(userName, userPassword)));
+
+    RETURN userId;
+END;
+
+CREATE FUNCTION Login(userName VARCHAR(255), userPassword VARCHAR(255))
+RETURNS VARCHAR(255) DETERMINISTIC
+BEGIN
+    DECLARE user_id VARCHAR(255);
+
+    SELECT userId INTO user_id 
+    FROM Users
+    WHERE passwordHash = HEX(HashPasswordWithUserName(userName, userPassword));
+
+    RETURN user_id;
+END //
+
+DELIMITER ;
