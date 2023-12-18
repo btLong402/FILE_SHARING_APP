@@ -116,7 +116,7 @@ class Server {
 						BufferedOutputStream bos;
 						try {
 							bos = new BufferedOutputStream(new FileOutputStream(f));
-							for (int i = 0; i < fileSize; i++) {
+							for (long i = 0; i < fileSize; i++) {
 								bos.write(in.read());
 								bos.flush();
 							}

@@ -65,8 +65,10 @@ class Client {
                     int data;
                     while ((data = bis.read()) != -1) {
                         out.write(data);
+                        System.out.print('.');
                         out.flush();
                     }
+                    System.out.println();
                     bis.close();
 					break;
 				default:
