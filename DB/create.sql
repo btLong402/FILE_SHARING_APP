@@ -100,18 +100,19 @@ BEGIN
 
     RETURN user_id;
 END;
-
 CREATE FUNCTION CreateNewGroup(username VARCHAR(255), groupNameInput VARCHAR(255))
 RETURNS VARCHAR(255) DETERMINISTIC
 BEGIN
     DECLARE creatorId VARCHAR(255);
     DECLARE groupId VARCHAR(255);
     
+    -- Retrieve the user ID based on the username
     SELECT userId INTO creatorId
     FROM Users
-    WHERE userName = username;
+    WHERE userName = username
+    LIMIT 1; -- Limit the result to 1 row
 
-    -- If the user doesn't exist, return null
+    -- If no user found, return null
     IF creatorId IS NULL THEN
         RETURN NULL;
     END IF;
@@ -138,37 +139,38 @@ BEGIN
     RETURN groupId;
 END;
 
-CREATE FUNCTION JoinGroup(username VARCHAR(255), groupId VARCHAR(255))
-RETURNS VARCHAR(255) DETERMINISTIC
-BEGIN
-    DECLARE user_id VARCHAR(255);
 
-    -- Retrieve the user's ID based on the username
-    SELECT userId INTO user_id 
-    FROM Users
-    WHERE userName = username
-    LIMIT 1; -- Limit the result to 1 row
+-- CREATE FUNCTION JoinGroup(username VARCHAR(255), groupId VARCHAR(255))
+-- RETURNS VARCHAR(255) DETERMINISTIC
+-- BEGIN
+--     DECLARE user_id VARCHAR(255);
 
-    -- If the user doesn't exist, return null
-    IF user_id IS NULL THEN
-        RETURN NULL;
-    END IF;
+--     -- Retrieve the user's ID based on the username
+--     SELECT userId INTO user_id 
+--     FROM Users
+--     WHERE userName = username
+--     LIMIT 1; -- Limit the result to 1 row
 
-    -- Check if the user is already a member of the group
-    IF EXISTS (
-        SELECT 1
-        FROM MemberOfGroup
-        WHERE userId = user_id AND groupId = groupId
-    ) THEN
-        RETURN NULL; -- User is already a member
-    END IF;
+--     -- If the user doesn't exist, return null
+--     IF user_id IS NULL THEN
+--         RETURN NULL;
+--     END IF;
 
-    -- Insert the user into the JoinGroup table for request tracking
-    INSERT INTO JoinGroup (userId, requestType, status, createAt, groupId)
-    VALUES (user_id, 'join', 0, NOW(), groupId);
+--     -- Check if the user is already a member of the group
+--     IF EXISTS (
+--         SELECT 1
+--         FROM MemberOfGroup
+--         WHERE userId = user_id AND groupId = groupId
+--     ) THEN
+--         RETURN NULL; -- User is already a member
+--     END IF;
 
-    RETURN 'Request sent'; -- Or a success message indicating the request was sent
-END;
+--     -- Insert the user into the JoinGroup table for request tracking
+--     INSERT INTO JoinGroup (userId, requestType, status, createAt, groupId)
+--     VALUES (user_id, 'join', 0, NOW(), groupId);
+
+--     RETURN 'Request sent'; -- Or a success message indicating the request was sent
+-- END;
 
 -- CREATE FUNCTION ManageGroupMembership(adminUsername VARCHAR(255), groupId VARCHAR(255), action VARCHAR(10), requestMemberUsername VARCHAR(255))
 -- RETURNS VARCHAR(255) DETERMINISTIC
@@ -216,14 +218,14 @@ END;
 --         WHERE userId = requestMemberId AND groupId = groupId;
 
 --         RETURN 'Membership approved';
-    
+--     
 --     -- If action is 'denied', deny membership
---     ELSE IF action = 'denied' THEN
+--     ELSEIF action = 'denied' THEN
 --         DELETE FROM JoinGroup
 --         WHERE userId = requestMemberId AND groupId = groupId;
 
 --         RETURN 'Membership denied';
-    
+--     
 --     ELSE
 --         RETURN NULL; -- Invalid action
 --     END IF;
