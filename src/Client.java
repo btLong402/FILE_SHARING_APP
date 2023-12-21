@@ -110,47 +110,44 @@ class Client {
 					String fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
 					out.writeUTF(cmd);
 					responseCode = in.readInt();
-					if (responseCode == 200) {
-						responseCode = in.readInt();
-						if (responseCode == 401) {
-							System.out.println("Source file name not exists!!!");
-						} else {
-							long fileSize = in.readLong();
-							int bytesRead;
-							long byteReaded = 0;
-							if (fileSize != 0) {
-								System.out.print("Input destination path: ");
-								String path = sc.readLine();
-								File folder = new File(path);
-								if (!folder.exists())
-									folder.mkdirs();
-								String desPath = Paths.get(path).resolve(fileName).toString();
-								File f = new File(desPath);
-								BufferedOutputStream bos;
-								try {
-									bos = new BufferedOutputStream(new FileOutputStream(f));
-									long tmp = fileSize;
-									while (tmp != 0) {
-										bytesRead = in.read(buffer);
-										bos.write(buffer, 0, bytesRead);
-										byteReaded += bytesRead;
-										trackProgress(fileSize, byteReaded);
-										tmp = tmp - bytesRead;
-										bos.flush();
-									}
-									bos.close();
-									responseCode = in.readInt();
-									if (responseCode == 200) {
-										System.out.println();
-										System.out.println("Download succeed!");
-									}
-								} catch (IOException e) {
-									e.printStackTrace();
+					if (responseCode != 200) {						
+						System.out.println("You do not have permission to download a file. Please log in.");
+						break;
+					}
+					responseCode = in.readInt();
+					if (responseCode == 401) {
+						System.out.println("Source file name not exists!!!");
+					} else {
+						long fileSize = in.readLong();
+						int bytesRead;
+						long byteReaded = 0;
+						if (fileSize != 0) {
+							System.out.print("Input destination path: ");
+							String path = sc.readLine();
+							File folder = new File(path);
+							if (!folder.exists())
+								folder.mkdirs();
+							String desPath = Paths.get(path).resolve(fileName).toString();
+							File f = new File(desPath);
+							BufferedOutputStream bos;
+							try {
+								bos = new BufferedOutputStream(new FileOutputStream(f));
+								long tmp = fileSize;
+								while (tmp != 0) {
+									bytesRead = in.read(buffer);
+									bos.write(buffer, 0, bytesRead);
+									byteReaded += bytesRead;
+									trackProgress(fileSize, byteReaded);
+									tmp = tmp - bytesRead;
+									bos.flush();
 								}
+								bos.close();
+								System.out.println();
+								System.out.println("Download succeed!");
+							} catch (IOException e) {
+								e.printStackTrace();
 							}
 						}
-					} else {
-						System.out.println("You do not have permission to download a file. Please log in.");
 					}
 					break;
 				case "LOGIN":
@@ -185,7 +182,7 @@ class Client {
 					break;
 				default:
 					responseCode = in.readInt();
-					if(responseCode == 404) {
+					if (responseCode == 404) {
 						System.out.println("Command not recognized!");
 					}
 					break;

@@ -177,9 +177,13 @@ class Server {
 						filePath = currentPath.resolve(groupName).resolve(command.nextToken()).toString();
 						File fileSource = new File(filePath);
 						if (!fileSource.exists()) {
-							out.writeInt(409);
+							out.writeInt(401);
 							out.flush();
 							break;
+						}
+						else {
+							out.writeInt(201);
+							out.flush();
 						}
 						BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileSource));
 						out.writeLong(fileSource.length());
@@ -195,8 +199,8 @@ class Server {
 						System.out.println();
 						System.out.println("Send succeed!");
 						bis.close();
-						out.writeInt(200);
-						out.flush();
+//						out.writeInt(200);
+//						out.flush();
 						break;
 					case "LOGIN":
 						if (userId != null) {
