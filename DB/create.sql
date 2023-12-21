@@ -68,24 +68,25 @@ BEGIN
     RETURN UNHEX(SHA2(CONCAT(userPassword, HEX(SHA2(userName, 256))), 256));
 END;
 
-CREATE FUNCTION InsertNewUser(userName VARCHAR(255), userPassword VARCHAR(255))
+CREATE FUNCTION InsertNewUser(pUserName VARCHAR(255), userPassword VARCHAR(255))
 RETURNS VARCHAR(255) DETERMINISTIC
 BEGIN
-    DECLARE userId VARCHAR(255);
+    DECLARE user_id VARCHAR(255);
 
-    SELECT userId INTO userId
+    SELECT userId INTO user_id
     FROM Users
-    WHERE userName = userName;
+    WHERE userName = pUserName
+    LIMIT 1;
 
-    IF userId IS NOT NULL THEN
+    IF user_id IS NOT NULL THEN
         RETURN NULL;
     END IF;
 
-    SET userId = UUID();
+    SET user_id = UUID();
     INSERT INTO Users (userId, userName, passwordHash)
-    VALUES (userId, userName, HEX(HashPasswordWithUserName(userName, userPassword)));
+    VALUES (user_id, pUserName, HEX(HashPasswordWithUserName(pUserName, userPassword)));
 
-    RETURN userId;
+    RETURN user_id;
 END;
 
 CREATE FUNCTION Login(userName VARCHAR(255), userPassword VARCHAR(255))
@@ -169,63 +170,63 @@ BEGIN
     RETURN 'Request sent'; -- Or a success message indicating the request was sent
 END;
 
-CREATE FUNCTION ManageGroupMembership(adminUsername VARCHAR(255), groupId VARCHAR(255), action VARCHAR(10), requestMemberUsername VARCHAR(255))
-RETURNS VARCHAR(255) DETERMINISTIC
-BEGIN
-    DECLARE adminId VARCHAR(255);
-    DECLARE requestMemberId VARCHAR(255);
+-- CREATE FUNCTION ManageGroupMembership(adminUsername VARCHAR(255), groupId VARCHAR(255), action VARCHAR(10), requestMemberUsername VARCHAR(255))
+-- RETURNS VARCHAR(255) DETERMINISTIC
+-- BEGIN
+--     DECLARE adminId VARCHAR(255);
+--     DECLARE requestMemberId VARCHAR(255);
 
-    -- Retrieve the admin's ID based on the admin's username
-    SELECT userId INTO adminId
-    FROM Users
-    WHERE userName = adminUsername;
+--     -- Retrieve the admin's ID based on the admin's username
+--     SELECT userId INTO adminId
+--     FROM Users
+--     WHERE userName = adminUsername;
 
-    -- If the admin doesn't exist, return null
-    IF adminId IS NULL THEN
-        RETURN NULL;
-    END IF;
+--     -- If the admin doesn't exist, return null
+--     IF adminId IS NULL THEN
+--         RETURN NULL;
+--     END IF;
 
-    -- Check if the admin is an admin of the group
-    DECLARE isAdmin INT;
-    SELECT COUNT(*) INTO isAdmin
-    FROM MemberOfGroup
-    WHERE userId = adminId AND groupId = groupId AND mRole = 'admin';
+--     -- Check if the admin is an admin of the group
+--     DECLARE isAdmin INT;
+--     SELECT COUNT(*) INTO isAdmin
+--     FROM MemberOfGroup
+--     WHERE userId = adminId AND groupId = groupId AND mRole = 'admin';
 
-    -- If the admin is not an admin of the group, return null
-    IF isAdmin = 0 THEN
-        RETURN NULL;
-    END IF;
+--     -- If the admin is not an admin of the group, return null
+--     IF isAdmin = 0 THEN
+--         RETURN NULL;
+--     END IF;
 
-    -- Retrieve the requested member's ID based on the username
-    SELECT userId INTO requestMemberId
-    FROM Users
-    WHERE userName = requestMemberUsername;
+--     -- Retrieve the requested member's ID based on the username
+--     SELECT userId INTO requestMemberId
+--     FROM Users
+--     WHERE userName = requestMemberUsername;
 
-    -- If the requested member doesn't exist, return null
-    IF requestMemberId IS NULL THEN
-        RETURN NULL;
-    END IF;
+--     -- If the requested member doesn't exist, return null
+--     IF requestMemberId IS NULL THEN
+--         RETURN NULL;
+--     END IF;
 
-    -- If action is 'accept', approve membership
-    IF action = 'accept' THEN
-        INSERT INTO MemberOfGroup (groupId, userId, mRole)
-        VALUES (groupId, requestMemberId, 'member');
+--     -- If action is 'accept', approve membership
+--     IF action = 'accept' THEN
+--         INSERT INTO MemberOfGroup (groupId, userId, mRole)
+--         VALUES (groupId, requestMemberId, 'member');
 
-        DELETE FROM JoinGroup
-        WHERE userId = requestMemberId AND groupId = groupId;
+--         DELETE FROM JoinGroup
+--         WHERE userId = requestMemberId AND groupId = groupId;
 
-        RETURN 'Membership approved';
+--         RETURN 'Membership approved';
     
-    -- If action is 'denied', deny membership
-    ELSEIF action = 'denied' THEN
-        DELETE FROM JoinGroup
-        WHERE userId = requestMemberId AND groupId = groupId;
+--     -- If action is 'denied', deny membership
+--     ELSE IF action = 'denied' THEN
+--         DELETE FROM JoinGroup
+--         WHERE userId = requestMemberId AND groupId = groupId;
 
-        RETURN 'Membership denied';
+--         RETURN 'Membership denied';
     
-    ELSE
-        RETURN NULL; -- Invalid action
-    END IF;
-END;
+--     ELSE
+--         RETURN NULL; -- Invalid action
+--     END IF;
+-- END;
 //
 DELIMITER ;
