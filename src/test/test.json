@@ -1,0 +1,11 @@
+{
+  "messageType" : "DOWNLOAD_FILE",
+  "data": {
+    "fileName": "test.txt",
+    "fileType": "text",
+    "fileSize": 160,
+    "groupName": "abc",
+    "folderName": "a"
+  }
+}
+
