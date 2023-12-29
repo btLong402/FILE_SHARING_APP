@@ -5,6 +5,8 @@ import helper.payload.file.UploadFilePayload;
 import helper.payload.group.CreateGroupPayload;
 import helper.payload.login.LoginPayload;
 import helper.payload.register.RegisterPayload;
+import helper.payload.group.RemoveMemberPayload;
+import helper.payload.group.CreateFolderPayload;
 import helper.request.Request;
 
 public class FactoryRequest {
@@ -25,6 +27,10 @@ public class FactoryRequest {
 			return new Request(messageType, new UploadFilePayload());
 		case "DOWNLOAD_FILE":
 			return new Request(messageType, new DownloadFilePayload());
+		case "REMOVE_MEMBER": 
+			return new Request(messageType, new RemoveMemberPayload());
+		case "CREATE_FOLDER":
+			return new Request(messageType, new CreateFolderPayload());
 		default:
 			break;
 		}
