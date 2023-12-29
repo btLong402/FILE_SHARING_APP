@@ -58,7 +58,6 @@ CREATE TABLE `JoinGroup` (
     FOREIGN KEY (`userId`) REFERENCES `Users`(`userId`),
     FOREIGN KEY (`groupId`) REFERENCES `Groups`(`groupId`)
 );
-DELIMITER //
 
 DELIMITER //
 
