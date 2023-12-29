@@ -6,7 +6,7 @@ import helper.payload.group.CreateGroupPayload;
 import helper.payload.login.LoginPayload;
 import helper.payload.register.RegisterPayload;
 import helper.payload.group.RemoveMemberPayload;
-import helper.payload.group.CreateFolderPayload;
+import helper.payload.folder.CreateFolderPayload;
 import helper.request.Request;
 
 public class FactoryRequest {

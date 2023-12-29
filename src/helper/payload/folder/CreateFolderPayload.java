@@ -1,4 +1,4 @@
-package helper.payload.group;
+package helper.payload.folder;
 
 import helper.payload.BasePayload;
 
