@@ -3,30 +3,26 @@ CREATE DATABASE ftpdb;
 USE ftpdb;
 
 CREATE TABLE `Users` (
-    `userId` VARCHAR(255) NOT NULL,
     `userName` VARCHAR(255) NOT NULL,
     `passwordHash` VARCHAR(255) NOT NULL,
-    PRIMARY KEY (`userId`),
-    UNIQUE (`userName`)
+    PRIMARY KEY (`userName`)
 );
 
 CREATE TABLE `Groups` (
-    `groupId` VARCHAR(255) NOT NULL,
     `groupName` VARCHAR(255) NOT NULL,
     `createBy` VARCHAR(255) NOT NULL,
     `createAt` DATETIME NOT NULL,
-    PRIMARY KEY (`groupId`),
-    UNIQUE (`groupName`),
-    CONSTRAINT `createBy` FOREIGN KEY (`createBy`) REFERENCES `Users`(`userId`)
+    PRIMARY KEY (`groupName`),
+    CONSTRAINT `createBy` FOREIGN KEY (`createBy`) REFERENCES `Users`(`userName`)
 );
 
 CREATE TABLE `Folder` (
     `folderName` VARCHAR(255) NOT NULL,
-    `groupId` VARCHAR(255) NOT NULL,
+    `groupName` VARCHAR(255) NOT NULL,
     `createAt` DATETIME NOT NULL,
     `folderId` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`folderId`),
-    CONSTRAINT `groupId` FOREIGN KEY (`groupId`) REFERENCES `Groups`(`groupId`)
+    CONSTRAINT `groupName` FOREIGN KEY (`groupName`) REFERENCES `Groups`(`groupName`)
 );
 
 CREATE TABLE `File` (
@@ -40,25 +36,24 @@ CREATE TABLE `File` (
 );
 
 CREATE TABLE `MemberOfGroup` (
-    `groupId` VARCHAR(255) NOT NULL,
-    `userId` VARCHAR (255) NOT NULL,
+    `groupName` VARCHAR(255) NOT NULL,
+    `userName` VARCHAR (255) NOT NULL,
     `mRole` ENUM('admin', 'member') NOT NULL,
-    PRIMARY KEY (`groupId`, `userId`),
-    FOREIGN KEY (`userId`) REFERENCES `Users`(`userId`),
-    FOREIGN KEY (`groupId`) REFERENCES `Groups`(`groupId`)
+    PRIMARY KEY (`groupName`, `userName`),
+    FOREIGN KEY (`userName`) REFERENCES `Users`(`userName`),
+    FOREIGN KEY (`groupName`) REFERENCES `Groups`(`groupName`)
 );
 
 CREATE TABLE `JoinGroup` (
-    `userId` VARCHAR(255) NOT NULL,
+    `userName` VARCHAR(255) NOT NULL,
     `requestType` ENUM('join','invite') NOT NULL,
     `status` INT NOT NULL,
     `createAt` DATETIME NOT NULL,
-    `groupId` VARCHAR(255) NOT NULL,
-    PRIMARY KEY (`groupId`, `userId`),
-    FOREIGN KEY (`userId`) REFERENCES `Users`(`userId`),
-    FOREIGN KEY (`groupId`) REFERENCES `Groups`(`groupId`)
+    `groupName` VARCHAR(255) NOT NULL,
+    PRIMARY KEY (`groupName`, `userName`),
+    FOREIGN KEY (`userName`) REFERENCES `Users`(`userName`),
+    FOREIGN KEY (`groupName`) REFERENCES `Groups`(`groupName`)
 );
-DELIMITER //
 
 DELIMITER //
 
@@ -67,77 +62,103 @@ RETURNS VARBINARY(64) DETERMINISTIC
 BEGIN
     RETURN UNHEX(SHA2(CONCAT(userPassword, HEX(SHA2(userName, 256))), 256));
 END;
-
+//
 CREATE FUNCTION InsertNewUser(pUserName VARCHAR(255), userPassword VARCHAR(255))
-RETURNS VARCHAR(255) DETERMINISTIC
+RETURNS BOOLEAN DETERMINISTIC
 BEGIN
-    DECLARE user_id VARCHAR(255);
+    DECLARE userExists INT;
 
-    SELECT userId INTO user_id
+    -- Check if the username already exists
+    SELECT COUNT(*) INTO userExists
     FROM Users
-    WHERE userName = pUserName
+    WHERE userName = pUserName;
+
+    IF userExists > 0 THEN
+        -- Username already exists, return NULL to indicate failure
+        RETURN NULL;
+    ELSE
+        -- Username doesn't exist, proceed to insert the new user
+        INSERT INTO Users (userName, passwordHash)
+        VALUES (pUserName, HEX(HashPasswordWithUserName(pUserName, userPassword)));
+
+        -- Return TRUE to indicate successful insertion
+        RETURN TRUE;
+    END IF;
+END //
+CREATE FUNCTION Login(userName VARCHAR(255), userPassword VARCHAR(255))
+RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE foundUserName VARCHAR(255);
+
+    -- Check if the username and hashed password match
+    SELECT userName INTO foundUserName
+    FROM Users
+    WHERE userName = userName AND passwordHash = HEX(HashPasswordWithUserName(userName, userPassword))
     LIMIT 1;
 
-    IF user_id IS NOT NULL THEN
-        RETURN NULL;
+    IF foundUserName IS NOT NULL THEN
+        RETURN TRUE; -- Valid credentials, return TRUE
+    ELSE
+        RETURN FALSE; -- Invalid credentials, return FALSE
     END IF;
+END //
 
-    SET user_id = UUID();
-    INSERT INTO Users (userId, userName, passwordHash)
-    VALUES (user_id, pUserName, HEX(HashPasswordWithUserName(pUserName, userPassword)));
-
-    RETURN user_id;
-END;
-
-CREATE FUNCTION Login(userName VARCHAR(255), userPassword VARCHAR(255))
-RETURNS VARCHAR(255) DETERMINISTIC
-BEGIN
-    DECLARE user_id VARCHAR(255);
-
-    SELECT userId INTO user_id 
-    FROM Users
-    WHERE passwordHash = HEX(HashPasswordWithUserName(userName, userPassword));
-
-    RETURN user_id;
-END;
 CREATE FUNCTION CreateNewGroup(username VARCHAR(255), groupNameInput VARCHAR(255))
-RETURNS VARCHAR(255) DETERMINISTIC
+RETURNS BOOLEAN DETERMINISTIC
 BEGIN
-    DECLARE creatorId VARCHAR(255);
-    DECLARE groupId VARCHAR(255);
-    
+    DECLARE creatorName VARCHAR(255);
+    DECLARE groupExists VARCHAR(255);
+
     -- Retrieve the user ID based on the username
-    SELECT userId INTO creatorId
+    SELECT userName INTO creatorName
     FROM Users
     WHERE userName = username
-    LIMIT 1; -- Limit the result to 1 row
+    LIMIT 1;
 
-    -- If no user found, return null
-    IF creatorId IS NULL THEN
-        RETURN NULL;
+    -- If no user found, return FALSE
+    IF creatorName IS NULL THEN
+        RETURN FALSE;
     END IF;
 
     -- Check if the group name already exists
-    SELECT groupId INTO groupId
+    SELECT groupName INTO groupExists
     FROM `Groups`
     WHERE groupName = groupNameInput;
 
-    -- If the group name already exists, return null
-    IF groupId IS NOT NULL THEN
-        RETURN NULL;
+    -- If the group name already exists, return NULL
+    IF groupExists IS NOT NULL THEN
+        RETURN FALSE;
     END IF;
 
     -- Create a new group
-    SET groupId = UUID();
-    INSERT INTO `Groups` (groupId, groupName, createBy, createAt)
-    VALUES (groupId, groupNameInput, creatorId, NOW());
+    INSERT INTO `Groups` (groupName, createBy, createAt)
+    VALUES (groupNameInput, creatorName, NOW());
 
     -- Add the creator to the MemberOfGroup table as an admin
-    INSERT INTO MemberOfGroup (groupId, userId, mRole)
-    VALUES (groupId, creatorId, 'admin');
+    INSERT INTO MemberOfGroup (groupName, userName, mRole)
+    VALUES (groupNameInput, username, 'admin');
 
-    RETURN groupId;
-END;
+    RETURN TRUE;
+END //
+
+CREATE FUNCTION CheckIsMember(user_name VARCHAR(255), group_name VARCHAR(255))
+RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE isMember INT;
+
+    -- Check if the user is a member of the specified group
+    SELECT COUNT(*) INTO isMember
+    FROM MemberOfGroup
+    WHERE userName = user_name AND groupName = group_name;
+
+    IF isMember > 0 THEN
+        RETURN TRUE; -- User is a member of the group
+    ELSE
+        RETURN FALSE; -- User is not a member of the group
+    END IF;
+END //
+
+
 
 
 -- CREATE FUNCTION JoinGroup(username VARCHAR(255), groupId VARCHAR(255))
