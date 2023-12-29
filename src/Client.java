@@ -16,7 +16,7 @@ class Client {
 		DataOutputStream out = null;
 		DataInputStream in = null;
 		try {
-			socket = new Socket("localhost", 5555);
+			socket = new Socket("10.70.169.27", 5555);
 			// writing to server
 			out = new DataOutputStream(socket.getOutputStream());
 

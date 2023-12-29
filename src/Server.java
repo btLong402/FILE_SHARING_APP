@@ -91,8 +91,7 @@ class Server {
 							break;
 						} else {
 							out.writeInt(200);
-							out.flush();
-						}
+							out.flush(
 						userName = command.nextToken();
 						groupName = command.nextToken();
 						String path = currentPath.resolve(groupName).toString();
