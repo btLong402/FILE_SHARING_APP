@@ -16,5 +16,4 @@ public class CreateGroupPayload extends BasePayload {
 	public void setGroupName(String groupName) {
 		this.groupName = groupName;
 	}
-	
 }
