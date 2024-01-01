@@ -3,8 +3,10 @@ package test;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import helper.FactoryRequest;
-import helper.request.Request;
+import helper.request.FactoryRequest;
+import helper.request._request.Request;
+
+
 
 public class Test {
 

@@ -11,6 +11,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
+import helper.request.FactoryRequest;
+import helper.request._request.Request;
+
 // Client class
 class Client {
 
@@ -31,6 +34,7 @@ class Client {
 
 			// reading from server
 			in = new DataInputStream(socket.getInputStream());
+			BufferedReader sc = new BufferedReader(new InputStreamReader(System.in));
 			// boolean isLogin = false;
 			if (in.readInt() == 200) {
 				System.out.println("Connect to Server successedS!");
@@ -39,7 +43,14 @@ class Client {
 				String rq;
 				String res;
 				JsonObject response;
-				BufferedReader sc = new BufferedReader(new InputStreamReader(System.in));
+				String groupName;
+				String folderName;
+				String filePath;
+				String uName;
+				String ps;
+				int responseCode;
+				byte[] buffer = new byte[4096];
+				
 				if (isLogin == false) {
 					System.out.println("Please login to use program!");
 					System.out.print("#CLIENT> ");
@@ -56,13 +67,7 @@ class Client {
 					out.flush();
 					break;
 				}
-				String groupName;
-				String folderName;
-				String filePath;
-				String uName;
-				String ps;
-				int responseCode;
-				byte[] buffer = new byte[4096];
+				Request requestObj = FactoryRequest.intialRequest(key);
 				switch (key) {
 				case "CREATE_GROUP":
 					if (isLogin == false) {
@@ -92,20 +97,18 @@ class Client {
 							folderName = sc.readLine();
 							try {
 								// Sử dụng Files.probeContentType() để lấy loại của file
-								Path path = Paths.get(filePath);
-								String fileName = fileSource.getName();
-								long fileSize = fileSource.length();
-//								String fileType = Files.probeContentType(path).toString();
-								rq = "{'messageType' : 'UPLOAD_FILE', 'data': {'fileName' : " + fileName
-										+ " , 'fileSize' :" + fileSize + ",'groupName': " + groupName
-										+ ", 'folderName':" + folderName + "}}";
+								requestObj.payload.setGroupName(groupName);
+								requestObj.payload.setFileName(fileSource.getName());
+								requestObj.payload.setFileSize(fileSource.length());
+								requestObj.payload.setFolderName(folderName);
+								rq = gson.toJson(requestObj);
 								BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileSource));
 								out.writeUTF(rq);
 								out.flush();
 								res = in.readUTF();
 								response = gson.fromJson(res, JsonObject.class);
 								System.out.println("Response form server:");
-								System.out.println(response.getAsJsonObject());
+								System.out.println(res);
 								if (response.get("statusCode").getAsInt() == 404) {
 									System.out.println("Group does not exist!");
 								} else {
@@ -196,7 +199,9 @@ class Client {
 						uName = sc.readLine();
 						System.out.print("Enter password: ");
 						ps = sc.readLine();
-						rq = "{'messageType': 'LOGIN', 'data' : { 'userName' : " + uName + ", 'password': " + ps + "}}";
+						requestObj.payload.setUserName(uName);
+						requestObj.payload.setPassword(ps);
+						rq = gson.toJson(requestObj);
 						out.writeUTF(rq);
 						out.flush();
 						res = in.readUTF();

@@ -53,7 +53,7 @@ public class ClientHandler implements Runnable {
 							"Client " + this.clientSocket.getInetAddress().getHostAddress() + " is disconnected!");
 					break;
 				}
-				JsonObject data = request.getAsJsonObject("data");
+				JsonObject data = request.getAsJsonObject("payload");
 				switch (key) {
 				case "CREATE_GROUP":
 
