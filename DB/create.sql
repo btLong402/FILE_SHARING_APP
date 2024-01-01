@@ -47,7 +47,7 @@ CREATE TABLE `MemberOfGroup` (
 CREATE TABLE `JoinGroup` (
     `userName` VARCHAR(255) NOT NULL,
     `requestType` ENUM('join','invite') NOT NULL,
-    `status` INT NOT NULL,
+    `status` ENUM('pending','accepted','denied') NOT NULL,
     `createAt` DATETIME NOT NULL,
     `groupName` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`groupName`, `userName`),
@@ -158,98 +158,256 @@ BEGIN
     END IF;
 END //
 
+CREATE FUNCTION RequestToJoinGroup(user_name VARCHAR(255), group_name VARCHAR(255))
+RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE isMem INT;
+    DECLARE isValidUser INT;
+    DECLARE isValidGroup INT;
+    DECLARE inJoinGroup INT;
 
+    -- Check if the username exists in the Users table
+    SELECT COUNT(*)
+    INTO isValidUser
+    FROM Users
+    WHERE userName = user_name;
 
+    -- Check if the group exists in the Groups table
+    SELECT COUNT(*)
+    INTO isValidGroup
+    FROM `Groups`
+    WHERE groupName = group_name;
 
--- CREATE FUNCTION JoinGroup(username VARCHAR(255), groupId VARCHAR(255))
--- RETURNS VARCHAR(255) DETERMINISTIC
--- BEGIN
---     DECLARE user_id VARCHAR(255);
+	SELECT COUNT(*)
+    INTO inJoinGroup
+    FROM JoinGroup
+    WHERE userName = user_name AND groupName = group_name;
+    
+    IF isValidUser > 0 AND isValidGroup > 0 AND inJoinGroup = 0 THEN
+        -- User exists in Users table and group exists in Groups table
+        -- Check if the user is already a member of the group using CheckIsMember function
+        SET isMem = CheckIsMember(user_name, group_name);
 
---     -- Retrieve the user's ID based on the username
---     SELECT userId INTO user_id 
---     FROM Users
---     WHERE userName = username
---     LIMIT 1; -- Limit the result to 1 row
+        IF isMem > 0 THEN
+            -- User is already a member, return FALSE indicating no need for a join request
+            RETURN FALSE;
+        ELSE
+            -- User is not a member, proceed to create a join request
+            INSERT INTO JoinGroup (userName, requestType, status, createAt, groupName)
+            VALUES (user_name, 'join', 'pending', NOW(), group_name);
 
---     -- If the user doesn't exist, return null
---     IF user_id IS NULL THEN
---         RETURN NULL;
---     END IF;
+            -- Additional logic for further processing can be added here
 
---     -- Check if the user is already a member of the group
---     IF EXISTS (
---         SELECT 1
---         FROM MemberOfGroup
---         WHERE userId = user_id AND groupId = groupId
---     ) THEN
---         RETURN NULL; -- User is already a member
---     END IF;
+            RETURN TRUE; -- Return TRUE for successful request initiation
+        END IF;
+    ELSE
+        -- Invalid username or group name, return FALSE indicating invalid entry
+        RETURN FALSE;
+    END IF;
+END //
 
---     -- Insert the user into the JoinGroup table for request tracking
---     INSERT INTO JoinGroup (userId, requestType, status, createAt, groupId)
---     VALUES (user_id, 'join', 0, NOW(), groupId);
+CREATE FUNCTION InviteToGroup(invitedUsername VARCHAR(255), group_name VARCHAR(255))
+RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE isValidInvited INT;
+    DECLARE isValidGroup INT;
+    DECLARE isUserInGroup INT;
+	DECLARE inJoinGroup INT;
+    -- Check if the invited user exists in the Users table
+    SELECT COUNT(*)
+    INTO isValidInvited
+    FROM Users
+    WHERE userName = invitedUsername;
 
---     RETURN 'Request sent'; -- Or a success message indicating the request was sent
--- END;
+    -- Check if the group exists in the Groups table
+    SELECT COUNT(*)
+    INTO isValidGroup
+    FROM `Groups`
+    WHERE groupName = group_name;
 
--- CREATE FUNCTION ManageGroupMembership(adminUsername VARCHAR(255), groupId VARCHAR(255), action VARCHAR(10), requestMemberUsername VARCHAR(255))
--- RETURNS VARCHAR(255) DETERMINISTIC
--- BEGIN
---     DECLARE adminId VARCHAR(255);
---     DECLARE requestMemberId VARCHAR(255);
+    -- Check if the invited user is already in the JoinGroup table for the specified group
+    SELECT COUNT(*)
+    INTO inJoinGroup
+    FROM JoinGroup
+    WHERE userName = invitedUsername AND groupName = group_name;
 
---     -- Retrieve the admin's ID based on the admin's username
---     SELECT userId INTO adminId
---     FROM Users
---     WHERE userName = adminUsername;
+	 -- Check if the invited user is already a member of the group
+    SET isUserInGroup = CheckIsMember(invitedUsername, group_name);
+    
+    IF isValidInvited > 0 AND isValidGroup > 0 AND isUserInGroup = 0 AND inJoinGroup = 0 THEN
+        -- Invited user exists, group exists, and user is not already in the JoinGroup for the specified group
+        -- Proceed to create an invitation
+        INSERT INTO JoinGroup (userName, requestType, status, createAt, groupName)
+        VALUES (invitedUsername, 'invite', 'pending', NOW(), group_name);
 
---     -- If the admin doesn't exist, return null
---     IF adminId IS NULL THEN
---         RETURN NULL;
---     END IF;
+        -- Additional logic for further processing can be added here
 
---     -- Check if the admin is an admin of the group
---     DECLARE isAdmin INT;
---     SELECT COUNT(*) INTO isAdmin
---     FROM MemberOfGroup
---     WHERE userId = adminId AND groupId = groupId AND mRole = 'admin';
+        RETURN TRUE; -- Return TRUE for successful invitation initiation
+    ELSE
+        -- Invalid invited user, group name, or user already in the JoinGroup, return FALSE
+        RETURN FALSE;
+    END IF;
+END //
+CREATE FUNCTION AcceptUsertoGroup(user_name VARCHAR(255), group_name VARCHAR(255))
+RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE isAdmin BOOLEAN;
+    DECLARE isPendingMember INT;
+        -- Check if the user is already in JoinGroup with 'pending' status
+        SELECT COUNT(*)
+        INTO isPendingMember
+        FROM JoinGroup
+        WHERE userName = user_name AND groupName = group_name AND status = 'pending';
 
---     -- If the admin is not an admin of the group, return null
---     IF isAdmin = 0 THEN
---         RETURN NULL;
---     END IF;
+        IF isPendingMember > 0 THEN
+            -- User is not in JoinGroup with 'pending' status, proceed with normal acceptance process
+            INSERT INTO MemberOfGroup (groupName, userName, mRole)
+            VALUES (group_name, user_name, 'member');
 
---     -- Retrieve the requested member's ID based on the username
---     SELECT userId INTO requestMemberId
---     FROM Users
---     WHERE userName = requestMemberUsername;
+            UPDATE JoinGroup
+            SET status = 'accepted'
+            WHERE userName = user_name AND groupName = group_name;
+            RETURN TRUE; -- Return TRUE for successful acceptance
+		ELSE
+            RETURN FALSE;
+        END IF;
+END //
 
---     -- If the requested member doesn't exist, return null
---     IF requestMemberId IS NULL THEN
---         RETURN NULL;
---     END IF;
+CREATE FUNCTION DenyUsertoGroup(user_name VARCHAR(255), group_name VARCHAR(255))
+RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE isPendingMember INT;
 
---     -- If action is 'accept', approve membership
---     IF action = 'accept' THEN
---         INSERT INTO MemberOfGroup (groupId, userId, mRole)
---         VALUES (groupId, requestMemberId, 'member');
+    -- Check if the user is already in JoinGroup with 'pending' status
+    SELECT COUNT(*)
+    INTO isPendingMember
+    FROM JoinGroup
+    WHERE userName = user_name AND groupName = group_name AND status = 'pending';
 
---         DELETE FROM JoinGroup
---         WHERE userId = requestMemberId AND groupId = groupId;
+    IF isPendingMember > 0 THEN
+        -- User is in JoinGroup with 'pending' status, deny their request
+        UPDATE JoinGroup
+        SET status = 'denied'
+        WHERE userName = user_name AND groupName = group_name;
 
---         RETURN 'Membership approved';
---     
---     -- If action is 'denied', deny membership
---     ELSEIF action = 'denied' THEN
---         DELETE FROM JoinGroup
---         WHERE userId = requestMemberId AND groupId = groupId;
+        RETURN TRUE; -- Return TRUE for successful denial
+    ELSE
+        -- User is not in JoinGroup with 'pending' status, or the group does not exist, return FALSE
+        RETURN FALSE;
+    END IF;
+END //
 
---         RETURN 'Membership denied';
---     
---     ELSE
---         RETURN NULL; -- Invalid action
---     END IF;
--- END;
-//
+CREATE FUNCTION LeaveGroup(user_name VARCHAR(255), group_name VARCHAR(255))
+RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE isMember INT;
+
+    -- Check if the user is a member of the specified group
+    SELECT COUNT(*)
+    INTO isMember
+    FROM MemberOfGroup
+    WHERE userName = user_name AND groupName = group_name;
+
+    IF isMember > 0 THEN
+        -- User is a member of the group, proceed to remove them from the group
+        DELETE FROM MemberOfGroup
+        WHERE userName = user_name AND groupName = group_name;
+
+        -- Additional logic (if needed) can be added here
+        
+        RETURN TRUE; -- Return TRUE for successful leaving
+    ELSE
+        -- User is not a member of the group, or the group does not exist, return FALSE
+        RETURN FALSE;
+    END IF;
+END //
+
+CREATE FUNCTION CreateFolder(folder_name VARCHAR(255), group_name VARCHAR(255))
+RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE folder_id VARCHAR(255);
+
+    -- Generate a unique folder ID (you can use UUID() or any other method)
+    SET folder_id = UUID();
+
+    -- Insert the new folder into the Folder table
+    INSERT INTO Folder (folderName, groupName, createAt, folderId)
+    VALUES (folder_name, group_name, NOW(), folder_id);
+
+    -- Additional logic (if needed) can be added here
+
+    RETURN TRUE; -- Return TRUE for successful folder creation
+END //
+CREATE FUNCTION RemoveFolder(folder_id VARCHAR(255))
+RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE folder_exists INT;
+
+    -- Check if the folder exists
+    SELECT COUNT(*)
+    INTO folder_exists
+    FROM Folder
+    WHERE folderId = folder_id;
+
+    IF folder_exists > 0 THEN
+        -- Folder exists, proceed to remove it
+        DELETE FROM Folder
+        WHERE folderId = folder_id;
+
+        RETURN TRUE; -- Return TRUE for successful folder removal
+    ELSE
+        -- Folder does not exist, return FALSE
+        RETURN FALSE;
+    END IF;
+END //
+CREATE FUNCTION CreateFile(file_name VARCHAR(255), file_size BIGINT, file_type VARCHAR(255), folder_id_param VARCHAR(255))
+RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE folder_exists INT;
+    DECLARE file_id VARCHAR(255);
+
+    -- Check if the folder exists
+    SELECT COUNT(*)
+    INTO folder_exists
+    FROM Folder
+    WHERE folderId = folder_id_param;
+
+    IF folder_exists > 0 THEN
+        SET file_id = UUID(); -- Generating a unique file ID
+        -- Folder exists, proceed to create the file with auto-generated fileId
+        INSERT INTO File (fileId, fName, fileSize, fileType, folderId)
+        VALUES (file_id, file_name, file_size, file_type, folder_id_param);
+
+        -- Additional logic (if needed) can be added here
+
+        RETURN TRUE; -- Return TRUE for successful file creation
+    ELSE
+        -- Folder does not exist, return FALSE
+        RETURN FALSE;
+    END IF;
+END //
+CREATE FUNCTION RemoveFile(file_id_param VARCHAR(255))
+RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE file_exists INT;
+
+    -- Check if the file exists
+    SELECT COUNT(*)
+    INTO file_exists
+    FROM File
+    WHERE fileId = file_id_param;
+
+    IF file_exists > 0 THEN
+        -- File exists, proceed to delete
+        DELETE FROM File
+        WHERE fileId = file_id_param;
+
+        -- Additional logic (if needed) can be added here
+
+        RETURN TRUE; -- Return TRUE for successful file removal
+    ELSE
+        -- File does not exist, return FALSE
+        RETURN FALSE;
+    END IF;
+END //
 DELIMITER ;
