@@ -1,4 +1,4 @@
-package helper.respone.payload;
+package helper.response.payload;
 
 public abstract class BasePayload {
 

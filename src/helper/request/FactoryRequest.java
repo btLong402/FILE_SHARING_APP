@@ -2,8 +2,24 @@ package helper.request;
 
 import helper.request._request.Request;
 import helper.request.payload.file.DownloadFilePayload;
+import helper.request.payload.file.FileCopyPayload;
+import helper.request.payload.file.FileDeletePayload;
+import helper.request.payload.file.FileMovePayload;
+import helper.request.payload.file.FileRenamePayload;
 import helper.request.payload.file.UploadFilePayload;
+import helper.request.payload.folder.CreateFolderPayload;
+import helper.request.payload.folder.FolderContentPayload;
+import helper.request.payload.folder.FolderCopyPayload;
+import helper.request.payload.folder.FolderDeletePayload;
+import helper.request.payload.folder.FolderMovePayload;
+import helper.request.payload.folder.FolderRenamePayload;
 import helper.request.payload.group.CreateGroupPayload;
+import helper.request.payload.group.InviteGroupPayload;
+import helper.request.payload.group.JoinGroupPayload;
+import helper.request.payload.group.LeaveGroupPayload;
+import helper.request.payload.group.ListAllGroupPayload;
+import helper.request.payload.group.ListGroupMemberPayload;
+import helper.request.payload.group.ListGroupPayload;
 import helper.request.payload.group.RemoveMemberPayload;
 import helper.request.payload.login.LoginPayload;
 import helper.request.payload.register.RegisterPayload;
@@ -30,6 +46,36 @@ public class FactoryRequest {
 			return new Request(messageType, new RemoveMemberPayload());
 		case "CREATE_FOLDER":
 			return new Request(messageType, new CreateFolderPayload());
+		case "JION_GROUP":
+			return new Request(messageType, new JoinGroupPayload());
+		case "INVITE_TO_GROUP":
+			return new Request(messageType, new InviteGroupPayload());
+		case "LEAVE_GROUP":
+			return new Request(messageType, new LeaveGroupPayload());
+		case "LIST_GROUPS":
+			return new Request(messageType, new ListGroupPayload());
+		case "LIST_ALL_GROUPS":
+			return new Request(messageType, new ListAllGroupPayload());
+		case "LIST_GROUP_MEMBERS":
+			return new Request(messageType, new ListGroupMemberPayload());
+		case "FOLDER_CONTENTS":
+			return new Request(messageType, new FolderContentPayload());
+		case "FOLDER_RENAME":
+			return new Request(messageType, new FolderRenamePayload());
+		case "FOLDER_DELETE":
+			return new Request(messageType, new FolderDeletePayload());
+		case "FOLDER_COPY":
+			return new Request(messageType, new FolderCopyPayload());
+		case "FOLDER_MOVE":
+			return new Request(messageType, new FolderMovePayload());
+		case "FILE_COPY":
+			return new Request(messageType, new FileCopyPayload());
+		case "FILE_MOVE":
+			return new Request(messageType, new FileMovePayload());
+		case "FILE_RENAME":
+			return new Request(messageType, new FileRenamePayload());
+		case "FILE_DELETE":
+			return new Request(messageType, new FileDeletePayload());
 		default:
 			break;
 		}

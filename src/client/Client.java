@@ -2,8 +2,6 @@ package client;
 
 import java.io.*;
 import java.net.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -43,6 +41,7 @@ class Client {
 				String rq;
 				String res;
 				JsonObject response;
+				JsonObject payload;
 				String groupName;
 				String folderName;
 				String filePath;
@@ -50,7 +49,7 @@ class Client {
 				String ps;
 				int responseCode;
 				byte[] buffer = new byte[4096];
-				
+
 				if (isLogin == false) {
 					System.out.println("Please login to use program!");
 					System.out.print("#CLIENT> ");
@@ -109,14 +108,14 @@ class Client {
 								response = gson.fromJson(res, JsonObject.class);
 								System.out.println("Response form server:");
 								System.out.println(res);
-								if (response.get("statusCode").getAsInt() == 404) {
+								if (response.get("responseCode").getAsInt() == 404) {
 									System.out.println("Group does not exist!");
 								} else {
 									res = in.readUTF();
 									response = gson.fromJson(res, JsonObject.class);
 									System.out.println("Response form server:");
-									System.out.println(response.getAsJsonObject());
-									if (response.get("statusCode").getAsInt() == 404) {
+									System.out.println(res);
+									if (response.get("responseCode").getAsInt() == 404) {
 										System.out.println("Folder does not exist!");
 									} else {
 										int data;
@@ -147,9 +146,9 @@ class Client {
 					break;
 				case "DOWNLOAD_FILE":
 					if (isLogin) {
-						System.out.print("Upload at group: ");
+						System.out.print("Download from group: ");
 						groupName = sc.readLine();
-						System.out.print("Upload at folder: ");
+						System.out.print("Download from folder: ");
 						folderName = sc.readLine();
 						System.out.print("Enter File name: ");
 						String fileName = sc.readLine();
@@ -159,11 +158,15 @@ class Client {
 						rq = gson.toJson(requestObj);
 						out.writeUTF(rq);
 						out.flush();
-						responseCode = in.readInt();
-						if (responseCode == 401) {
-							System.out.println("Source file name not exists!!!");
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						if (response.get("responseCode").getAsInt() == 404) {
+							System.out.println("Group or Folder or File does not exists!!!");
 						} else {
-							long fileSize = in.readLong();
+							payload = response.get("payload").getAsJsonObject();
+							long fileSize = payload.get("fileSize").getAsLong();
 							int bytesRead;
 							long byteReaded = 0;
 							if (fileSize != 0) {
@@ -214,8 +217,8 @@ class Client {
 						res = in.readUTF();
 						response = gson.fromJson(res, JsonObject.class);
 						System.out.println("Response form server:");
-						System.out.println(response.getAsJsonObject());
-						if (response.get("statusCode").getAsInt() == 200) {
+						System.out.println(res);
+						if (response.get("responseCode").getAsInt() == 200) {
 							userName = uName;
 							isLogin = true;
 							System.out.println("Login success!");
@@ -240,8 +243,8 @@ class Client {
 						res = in.readUTF();
 						response = gson.fromJson(res, JsonObject.class);
 						System.out.println("Response form server:");
-						System.out.println(response.getAsJsonObject());
-						if (response.get("statusCode").getAsInt() == 201) {
+						System.out.println(res);
+						if (response.get("responseCode").getAsInt() == 201) {
 							userName = uName;
 							isLogin = true;
 							System.out.println("Create success! Hello " + userName);
