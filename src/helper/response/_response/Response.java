@@ -7,7 +7,7 @@ public class Response {
 	public int responseCode;
 	public BasePayload payload;
 
-	public Response(String messageType, int responseCode, BasePayload payload) {
+	public Response(int responseCode, BasePayload payload) {
 		super();
 		this.responseCode = responseCode;
 		this.payload = payload;

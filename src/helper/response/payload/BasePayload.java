@@ -1,5 +1,16 @@
 package helper.response.payload;
 
-public abstract class BasePayload {
+import java.util.List;
 
+import models.group_model.ListOfAppliedGroups;
+import models.group_model.ListOfJoinRequests;
+
+public abstract class BasePayload {
+	public void setListOfAppliedGroups(List<ListOfAppliedGroups> listOfAppliedGroups) {
+	}
+
+	public void setListOfJoinRequests(List<ListOfJoinRequests> listOfJoinRequests) {
+		// TODO Auto-generated method stub
+		
+	}
 }
