@@ -2,12 +2,11 @@ package helper.response;
 
 
 import helper.response._response.Response;
-import helper.response.payload.file.DownloadFilePayload;
-import helper.response.payload.file.UploadFilePayload;
-import helper.response.payload.group.CreateGroupPayload;
-import helper.response.payload.group.RemoveMemberPayload;
-import helper.response.payload.login.LoginPayload;
-import helper.response.payload.register.RegisterPayload;
+import helper.response.payload.EmptyPayload;
+import helper.response.payload.file.*;
+import helper.response.payload.group.*;
+import helper.response.payload.login.*;
+import helper.response.payload.register.*;
 
 public class FactoryResponse {
 
@@ -15,20 +14,27 @@ public class FactoryResponse {
 
 	}
 	
-	public static Response intialRespone(String messageType, int responeCode) {
+	public static Response intialRespone(String messageType, int responseCode) {
 		switch (messageType) {
 		case "LOGIN":
-			return new Response(messageType,responeCode, new LoginPayload());
+			return new Response(responseCode, new LoginPayload());
 		case "REGISTER":
-			return new Response(messageType,responeCode, new RegisterPayload());
+			return new Response(responseCode, new RegisterPayload());
 		case "CREATE_GROUP":
-			return new Response(messageType,responeCode, new CreateGroupPayload());
+			return new Response(responseCode, new CreateGroupPayload());
 		case "UPLOAD_FILE":
-			return new Response(messageType,responeCode, new UploadFilePayload());
+			return new Response(responseCode, new UploadFilePayload());
 		case "DOWNLOAD_FILE":
-			return new Response(messageType,responeCode, new DownloadFilePayload());
+			return new Response(responseCode, new DownloadFilePayload());
 		case "REMOVE_MEMBER":
-			return new Response(messageType,responeCode, new RemoveMemberPayload());
+			return new Response(responseCode, new RemoveMemberPayload());
+		case "JOIN_GROUP_STATUS":
+			if(responseCode == 200)
+			return new Response(responseCode, new JoinGroupStatusPayload());
+			else
+			return new Response(responseCode, new EmptyPayload());
+		case "JOIN_REQUEST_LIST":
+			return new Response(responseCode, new JoinRequestListPayload());
 		default:
 			break;
 		}
