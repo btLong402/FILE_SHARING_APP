@@ -20,19 +20,17 @@ CREATE TABLE `Folder` (
     `folderName` VARCHAR(255) NOT NULL,
     `groupName` VARCHAR(255) NOT NULL,
     `createAt` DATETIME NOT NULL,
-    `folderId` VARCHAR(255) NOT NULL,
-    PRIMARY KEY (`folderId`),
+    PRIMARY KEY (`folderName`),
     CONSTRAINT `groupName` FOREIGN KEY (`groupName`) REFERENCES `Groups`(`groupName`)
 );
 
 CREATE TABLE `File` (
-    `fileId` VARCHAR(255) NOT NULL,
     `fName` VARCHAR(255) NOT NULL,
     `fileSize` BIGINT NOT NULL,
-    `fileType` VARCHAR(255) NOT NULL,
-    `folderId` VARCHAR(255) NOT NULL,
-    PRIMARY KEY (`fileId`),
-    CONSTRAINT `folderId` FOREIGN KEY (`folderId`) REFERENCES `Folder`(`folderId`)
+    `folderName` VARCHAR(255) NOT NULL,
+    `groupName` VARCHAR(255) NOT NULL,
+    PRIMARY KEY (`fName`),
+    CONSTRAINT `folderName` FOREIGN KEY (`folderName`) REFERENCES `Folder`(`folderName`)
 );
 
 CREATE TABLE `MemberOfGroup` (
@@ -246,6 +244,23 @@ BEGIN
         RETURN FALSE;
     END IF;
 END //
+CREATE FUNCTION CheckIsAdmin(user_name VARCHAR(255), group_name VARCHAR(255))
+RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE is_admin INT;
+
+    -- Check if the user is an admin in the group
+    SELECT COUNT(*)
+    INTO is_admin
+    FROM MemberOfGroup
+    WHERE userName = user_name AND groupName = group_name AND mRole = 'admin';
+
+    IF is_admin > 0 THEN
+        RETURN TRUE; -- User is an admin in the group
+    ELSE
+        RETURN FALSE; -- User is not an admin in the group
+    END IF;
+END;
 CREATE FUNCTION AcceptUsertoGroup(user_name VARCHAR(255), group_name VARCHAR(255))
 RETURNS BOOLEAN DETERMINISTIC
 BEGIN
@@ -323,20 +338,15 @@ END //
 CREATE FUNCTION CreateFolder(folder_name VARCHAR(255), group_name VARCHAR(255))
 RETURNS BOOLEAN DETERMINISTIC
 BEGIN
-    DECLARE folder_id VARCHAR(255);
-
-    -- Generate a unique folder ID (you can use UUID() or any other method)
-    SET folder_id = UUID();
-
     -- Insert the new folder into the Folder table
-    INSERT INTO Folder (folderName, groupName, createAt, folderId)
-    VALUES (folder_name, group_name, NOW(), folder_id);
+    INSERT INTO Folder (folderName, groupName, createAt)
+    VALUES (folder_name, group_name, NOW());
 
     -- Additional logic (if needed) can be added here
 
     RETURN TRUE; -- Return TRUE for successful folder creation
 END //
-CREATE FUNCTION RemoveFolder(folder_id VARCHAR(255))
+CREATE FUNCTION RemoveFolder(folder_name VARCHAR(255), group_name VARCHAR(255))
 RETURNS BOOLEAN DETERMINISTIC
 BEGIN
     DECLARE folder_exists INT;
@@ -345,66 +355,122 @@ BEGIN
     SELECT COUNT(*)
     INTO folder_exists
     FROM Folder
-    WHERE folderId = folder_id;
+    WHERE folderName = folder_name AND groupName = group_name;
 
     IF folder_exists > 0 THEN
         -- Folder exists, proceed to remove it
         DELETE FROM Folder
-        WHERE folderId = folder_id;
+        WHERE folderName = folder_name AND groupName = group_name;
 
         RETURN TRUE; -- Return TRUE for successful folder removal
     ELSE
-        -- Folder does not exist, return FALSE
+        -- Folder does not exist, or the folder does not belong to the specified group, return FALSE
         RETURN FALSE;
     END IF;
-END //
-CREATE FUNCTION CreateFile(file_name VARCHAR(255), file_size BIGINT, file_type VARCHAR(255), folder_id_param VARCHAR(255))
+END // 
+
+CREATE FUNCTION RenameFolder(group_name VARCHAR(255), folder_name VARCHAR(255), new_folder_name VARCHAR(255))
 RETURNS BOOLEAN DETERMINISTIC
 BEGIN
     DECLARE folder_exists INT;
-    DECLARE file_id VARCHAR(255);
 
-    -- Check if the folder exists
+    -- Check if the folder exists within the specified group
     SELECT COUNT(*)
     INTO folder_exists
     FROM Folder
-    WHERE folderId = folder_id_param;
+    WHERE folderName = folder_name AND groupName = group_name;
 
     IF folder_exists > 0 THEN
-        SET file_id = UUID(); -- Generating a unique file ID
-        -- Folder exists, proceed to create the file with auto-generated fileId
-        INSERT INTO File (fileId, fName, fileSize, fileType, folderId)
-        VALUES (file_id, file_name, file_size, file_type, folder_id_param);
+        -- Folder exists in the specified group, proceed to rename it
+        UPDATE Folder
+        SET folderName = new_folder_name
+        WHERE folderName = folder_name AND groupName = group_name;
 
-        -- Additional logic (if needed) can be added here
-
-        RETURN TRUE; -- Return TRUE for successful file creation
+        RETURN TRUE; -- Return TRUE for successful folder rename
     ELSE
-        -- Folder does not exist, return FALSE
+        -- Folder does not exist in the specified group, return FALSE
         RETURN FALSE;
     END IF;
 END //
-CREATE FUNCTION RemoveFile(file_id_param VARCHAR(255))
+
+CREATE FUNCTION CreateFile(file_name VARCHAR(255), file_size BIGINT, group_name VARCHAR(255), folder_name VARCHAR(255))
+RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE folder_exists INT;
+    DECLARE group_exists INT;
+
+    -- Check if the group exists
+    SELECT COUNT(*)
+    INTO group_exists
+    FROM `Groups`
+    WHERE groupName = group_name;
+
+    IF group_exists > 0 THEN
+        -- Group exists, check if the folder exists within the group
+        SELECT COUNT(*)
+        INTO folder_exists
+        FROM Folder
+        WHERE folderName = folder_name AND groupName = group_name;
+
+        IF folder_exists > 0 THEN
+            -- Folder exists within the group, proceed to create the file
+            INSERT INTO `File` (fName, fileSize, folderName, groupName)
+            VALUES (file_name, file_size, folder_name, group_name);
+
+            RETURN TRUE; -- Return TRUE for successful file creation
+        ELSE
+            -- Folder does not exist within the group, return FALSE
+            RETURN FALSE;
+        END IF;
+    ELSE
+        -- Group does not exist, return FALSE
+        RETURN FALSE;
+    END IF;
+END //
+
+CREATE FUNCTION RemoveFile(file_name VARCHAR(255), group_name VARCHAR(255), folder_name VARCHAR(255))
 RETURNS BOOLEAN DETERMINISTIC
 BEGIN
     DECLARE file_exists INT;
 
-    -- Check if the file exists
+    -- Check if the file exists in the specified folder within the group
     SELECT COUNT(*)
     INTO file_exists
-    FROM File
-    WHERE fileId = file_id_param;
+    FROM `File`
+    WHERE fName = file_name AND groupName = group_name AND folderName = folder_name;
 
     IF file_exists > 0 THEN
-        -- File exists, proceed to delete
-        DELETE FROM File
-        WHERE fileId = file_id_param;
-
-        -- Additional logic (if needed) can be added here
+        -- File exists, proceed to remove it
+        DELETE FROM `File`
+        WHERE fName = file_name AND groupName = group_name AND folderName = folder_name;
 
         RETURN TRUE; -- Return TRUE for successful file removal
     ELSE
         -- File does not exist, return FALSE
+        RETURN FALSE;
+    END IF;
+END //
+
+CREATE FUNCTION RenameFile(file_name VARCHAR(255), group_name VARCHAR(255), folder_name VARCHAR(255), new_file_name VARCHAR(255))
+RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE file_exists INT;
+
+    -- Check if the file exists in the specified folder within the group
+    SELECT COUNT(*)
+    INTO file_exists
+    FROM `File`
+    WHERE fName = file_name AND groupName = group_name AND folderName = folder_name;
+
+    IF file_exists > 0 THEN
+        -- File exists, and the new file name does not exist; proceed to rename it
+        UPDATE `File`
+        SET fName = new_file_name
+        WHERE fName = file_name AND groupName = group_name AND folderName = folder_name;
+
+        RETURN TRUE; -- Return TRUE for successful file renaming
+    ELSE
+        -- File does not exist or new file name already exists, return FALSE
         RETURN FALSE;
     END IF;
 END //
