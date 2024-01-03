@@ -40,6 +40,7 @@ public abstract class BasePayload {
 
 	public void setNewFileName(String newFileName) {
 	}
-	
-	public void setNewFolderName(String newFolderName) {}
+
+	public void setNewFolderName(String newFolderName) {
+	}
 }
