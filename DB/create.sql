@@ -75,7 +75,7 @@ BEGIN
 
     IF userExists > 0 THEN
         -- Username already exists, return NULL to indicate failure
-        RETURN NULL;
+        RETURN FALSE;
     ELSE
         -- Username doesn't exist, proceed to insert the new user
         INSERT INTO Users (userName, passwordHash)
@@ -195,8 +195,6 @@ BEGIN
             -- User is not a member, proceed to create a join request
             INSERT INTO JoinGroup (userName, requestType, status, createAt, groupName)
             VALUES (user_name, 'join', 'pending', NOW(), group_name);
-
-            -- Additional logic for further processing can be added here
 
             RETURN TRUE; -- Return TRUE for successful request initiation
         END IF;
