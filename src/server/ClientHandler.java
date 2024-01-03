@@ -39,10 +39,10 @@ public class ClientHandler implements Runnable {
 			while (true) {
 				byte[] buffer = new byte[4096];
 				cmd = in.readUTF();
+				System.out.println(cmd);
 //				StringTokenizer command = new StringTokenizer(cmd, " ");
 				JsonObject request = gson.fromJson(cmd, JsonObject.class);
 				System.out.println("Request from client: " + this.clientSocket.getInetAddress().getHostAddress());
-				System.out.println(request.getAsJsonObject());
 				String response = "";
 				String key = request.get("messageType").getAsString();
 				if (key.equals("EXIT")) {
@@ -121,7 +121,7 @@ public class ClientHandler implements Runnable {
 					out.flush();
 					break;
 				case "REGISTER":
-					if (userController.signUp(data.get("userName").getAsString(), data.get("passwrod").getAsString())) {
+					if (userController.signUp(data.get("userName").getAsString(), data.get("password").getAsString())) {
 						response = "{'statusCode': 201}";
 					} else {
 						response = "{'statusCode': 409}";
