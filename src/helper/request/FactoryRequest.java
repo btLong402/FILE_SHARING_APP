@@ -26,8 +26,10 @@ public class FactoryRequest {
 			return new Request(messageType, new UploadFilePayload());
 		case "DOWNLOAD_FILE":
 			return new Request(messageType, new DownloadFilePayload());
-		case "REMOVE_MEMBER":
+		case "REMOVE_MEMBER": 
 			return new Request(messageType, new RemoveMemberPayload());
+		case "CREATE_FOLDER":
+			return new Request(messageType, new CreateFolderPayload());
 		default:
 			break;
 		}
