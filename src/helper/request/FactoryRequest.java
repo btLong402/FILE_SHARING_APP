@@ -1,5 +1,6 @@
 package helper.request;
 
+import helper.payload.folder.CreateFolderPayload;
 import helper.request._request.Request;
 import helper.request.payload.file.DownloadFilePayload;
 import helper.request.payload.file.UploadFilePayload;

@@ -1,6 +1,6 @@
 package helper.payload.folder;
 
-import helper.payload.BasePayload;
+import helper.request.payload.BasePayload;
 
 public class CreateFolderPayload extends BasePayload {
 	String groupName;
