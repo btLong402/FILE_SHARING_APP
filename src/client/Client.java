@@ -147,10 +147,17 @@ class Client {
 					break;
 				case "DOWNLOAD_FILE":
 					if (isLogin) {
-						groupName = command.nextToken();
-						filePath = command.nextToken();
-						String fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
-						out.writeUTF(cmd);
+						System.out.print("Upload at group: ");
+						groupName = sc.readLine();
+						System.out.print("Upload at folder: ");
+						folderName = sc.readLine();
+						System.out.print("Enter File name: ");
+						String fileName = sc.readLine();
+						requestObj.payload.setFileName(fileName);
+						requestObj.payload.setFolderName(folderName);
+						requestObj.payload.setGroupName(groupName);
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
 						out.flush();
 						responseCode = in.readInt();
 						if (responseCode == 401) {
@@ -218,14 +225,26 @@ class Client {
 					}
 					break;
 				case "REGISTER":
-					if (isLogin == false) {
+					if (isLogin == true) {
 						System.out.println("You are already login!");
 					} else {
-						out.writeUTF(cmd);
+						System.out.print("Enter user-name: ");
+						uName = sc.readLine();
+						System.out.print("Enter password: ");
+						ps = sc.readLine();
+						requestObj.payload.setUserName(uName);
+						requestObj.payload.setPassword(ps);
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
 						out.flush();
-						responseCode = in.readInt();
-						if (responseCode == 201) {
-							System.out.println("Create success! Hello " + command.nextToken());
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(response.getAsJsonObject());
+						if (response.get("statusCode").getAsInt() == 201) {
+							userName = uName;
+							isLogin = true;
+							System.out.println("Create success! Hello " + userName);
 						} else {
 							System.out.println("User already created!");
 						}
@@ -254,22 +273,6 @@ class Client {
 			}
 		}
 	}
-
-//	public static String inpuPassword() {
-//		Console console = System.console();
-//		if (console == null) {
-//			System.out.println("Can not take console");
-//			return "";
-//		}
-//		char[] passwordArray = console.readPassword("Enter password: ");
-//		return new String(passwordArray);
-//	}
-//	public static String inputPassword() throws IOException {
-//        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-//            System.out.print("Enter password: ");
-//            char[] passwordArray = reader.readLine().toCharArray();
-//            return new String(passwordArray);
-//    }
 
 	public static void trackProgress(long totalFileSize, long byteSend) {
 		double progress = (double) byteSend / totalFileSize * 100;

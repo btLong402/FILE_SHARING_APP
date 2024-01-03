@@ -8,9 +8,8 @@ public class UserController {
 	private User_DAL db = new User_DAL();
 	
 	public boolean signUp(String userName, String password) {
-		String userId = db.create(userName, password);
-		if(userId != null) {
-			this.user.setUserId(userId);
+		boolean isSuccess = db.create(userName, password);
+		if(isSuccess) {
 			this.user.setUserName(userName);
 			return true;
 		}
@@ -18,9 +17,8 @@ public class UserController {
 	};
 	
 	public boolean signIn(String userName, String password) {
-		String userId = db.login(userName, password);
-		if(userId != null) {
-			this.user.setUserId(userId);
+		boolean isSuccess = db.login(userName, password);
+		if(isSuccess) {
 			this.user.setUserName(userName);
 			return true;
 		}
@@ -31,9 +29,6 @@ public class UserController {
 		return this.user.getUserName();
 	}
 	
-	public String getUserId() {
-		return this.user.getUserId();
-	}
 	public UserModel getUser() {
 		return this.user;
 	}
