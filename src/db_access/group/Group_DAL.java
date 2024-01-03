@@ -128,6 +128,25 @@ public class Group_DAL {
 		}
 		return false;
 	}
+	//Check Member of groupName
+	public boolean checkIsMember(String userName, String groupName) {
+		try {
+			Connection connection = FTP_Db.getConnection();
+			String query = "SELECT CheckIsMember(?,?) AS Success;";
+			try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+				preparedStatement.setString(1, userName);
+				preparedStatement.setString(2, groupName);
+				try (ResultSet resultSet = preparedStatement.executeQuery()) {
+					if (resultSet.next()) {
+						return resultSet.getBoolean("Success");
+					}
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 	//List all Groups
 	public List<String> listAllGroup() {
 	    List<String> groupList = new ArrayList<>();
