@@ -1,20 +1,21 @@
 package helper.response;
 
 import helper.response._response.Response;
-import helper.response.payload.file.DownloadFilePayload;
-import helper.response.payload.file.UploadFilePayload;
+
 import helper.response.payload.folder.CreateFolderPayload;
-import helper.response.payload.group.CreateGroupPayload;
-import helper.response.payload.group.ListAllGroupPayload;
-import helper.response.payload.group.RemoveMemberPayload;
-import helper.response.payload.login.LoginPayload;
-import helper.response.payload.register.RegisterPayload;
+import helper.response.payload.EmptyPayload;
+import helper.response.payload.file.*;
+import helper.response.payload.group.*;
+import helper.response.payload.login.*;
+import helper.response.payload.register.*;
+
 
 public class FactoryResponse {
 
 	private FactoryResponse() {
 
 	}
+
 
 	public static Response intialResponse(String messageType) {
 		switch (messageType) {
@@ -34,6 +35,10 @@ public class FactoryResponse {
 			return new Response(new ListAllGroupPayload());
 		case "CREATE_FOLDER":
 			return new Response(new CreateFolderPayload());
+		case "JOIN_GROUP_STATUS":
+			return new Response(new JoinGroupStatusPayload());
+		case "JOIN_REQUEST_LIST":
+			return new Response(new JoinRequestListPayload());
 		default:
 			break;
 		}

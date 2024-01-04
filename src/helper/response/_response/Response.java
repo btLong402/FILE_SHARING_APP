@@ -7,7 +7,6 @@ public class Response {
 	public int responseCode;
 	public BasePayload payload;
 
-	
 	public Response(BasePayload payload) {
 		super();
 		this.payload = payload;
