@@ -21,6 +21,7 @@ import controllers.group_controller.GroupController;
 import controllers.user_controller.UserController;
 import helper.response.FactoryResponse;
 import helper.response._response.Response;
+import helper.response.payload.EmptyPayload;
 
 public class ClientHandler implements Runnable {
 	private final Socket clientSocket;
@@ -154,12 +155,14 @@ public class ClientHandler implements Runnable {
 							System.out.println("Sent file successfully!");
 						} else {
 							responseObj.setResponseCode(404);
+							responseObj.setPayload(new EmptyPayload());
 							out.writeUTF(gson.toJson(responseObj));
 							out.flush();
 						}
 					}
 					else {
 						responseObj.setResponseCode(403);
+						responseObj.setPayload(new EmptyPayload());
 						out.writeUTF(gson.toJson(responseObj));
 						out.flush();
 					}
