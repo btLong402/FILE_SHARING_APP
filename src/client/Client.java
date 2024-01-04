@@ -116,33 +116,29 @@ class Client {
 								response = gson.fromJson(res, JsonObject.class);
 								System.out.println("Response form server:");
 								System.out.println(res);
-								if (response.get("responseCode").getAsInt() == 404) {
-									System.out.println("Group does not exist!");
-								} else {
-									res = in.readUTF();
-									response = gson.fromJson(res, JsonObject.class);
-									System.out.println("Response form server:");
-									System.out.println(res);
-									if (response.get("responseCode").getAsInt() == 404) {
-										System.out.println("Folder does not exist!");
-									} else {
-										int data;
-										long byteSend = 0;
-										while ((data = bis.read(buffer)) != -1) {
-											out.write(buffer, 0, data);
-											byteSend += data;
-											trackProgress(fileSource.length(), byteSend);
-											out.flush();
-										}
-										bis.close();
-										System.out.println();
-										System.out.println("Uploaded!");
-										res = in.readUTF();
-										response = gson.fromJson(res, JsonObject.class);
-										System.out.println("Response form server:");
-										System.out.println(response.getAsJsonObject());
+								switch (response.get("responseCode").getAsInt()) {
+								case 200:
+									System.out.println("Upload start. Please wait!");
+									int data;
+									long byteSend = 0;
+									while ((data = bis.read(buffer)) != -1) {
+										out.write(buffer, 0, data);
+										byteSend += data;
+										trackProgress(fileSource.length(), byteSend);
+										out.flush();
 									}
-
+									bis.close();
+									System.out.println();
+									System.out.println("Uploaded!");
+									break;
+								case 404:
+									System.out.println("Folder or Group does not existed!");
+									break;
+								case 403:
+									System.out.println("You are not member of this group!");
+									break;
+								default:
+									break;
 								}
 							} catch (IOException e) {
 								e.printStackTrace();
@@ -170,9 +166,14 @@ class Client {
 						response = gson.fromJson(res, JsonObject.class);
 						System.out.println("Response form server:");
 						System.out.println(res);
-						if (response.get("responseCode").getAsInt() == 404) {
+						switch (response.get("responseCode").getAsInt()) {
+						case 404:
 							System.out.println("Group or Folder or File does not exists!!!");
-						} else {
+							break;
+						case 403:
+							System.out.println("You are not member of this group!");
+							break;
+						case 200:
 							payload = response.get("payload").getAsJsonObject();
 							long fileSize = payload.get("fileSize").getAsLong();
 							int bytesRead;
@@ -204,6 +205,9 @@ class Client {
 									e.printStackTrace();
 								}
 							}
+							break;
+						default:
+							break;
 						}
 					} else {
 						System.out.println("You do not have permission to download a file. Please log in.");

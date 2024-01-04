@@ -86,11 +86,7 @@ public class ClientHandler implements Runnable {
 					}
 					break;
 				case "UPLOAD_FILE":
-					File Group = new File(this.currentPath.resolve(data.get("groupName").getAsString()).toString());
-					if (Group.exists()) {
-						responseObj.setResponseCode(200);
-						out.writeUTF(gson.toJson(responseObj));
-						out.flush();
+					if (new GroupController().isMember(userController.getUserName(), data.get("groupName").getAsString())) {
 						File folder = new File(this.currentPath.resolve(data.get("groupName").getAsString())
 								.resolve(data.get("folderName").getAsString()).toString());
 						if (folder.exists()) {
@@ -106,6 +102,7 @@ public class ClientHandler implements Runnable {
 							File f = new File(destinationPath);
 							BufferedOutputStream bos;
 							try {
+								System.out.println("Upload start. Please wait!");
 								bos = new BufferedOutputStream(new FileOutputStream(f));
 								long tmp = fileSize;
 								while (tmp != 0) {
@@ -118,9 +115,6 @@ public class ClientHandler implements Runnable {
 								}
 								System.out.println();
 								System.out.println("Upload successfully!");
-								responseObj.setResponseCode(200);
-								out.writeUTF(gson.toJson(responseObj));
-								out.flush();
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
@@ -130,35 +124,42 @@ public class ClientHandler implements Runnable {
 							out.flush();
 						}
 					} else {
-						responseObj.setResponseCode(404);
+						responseObj.setResponseCode(403);
 						out.writeUTF(gson.toJson(responseObj));
 						out.flush();
 					}
 					break;
 				case "DOWNLOAD_FILE":
-					File file = new File(this.currentPath.resolve(data.get("groupName").getAsString())
-							.resolve(data.get("folderName").getAsString()).resolve(data.get("fileName").getAsString())
-							.toString());
-					if (file.exists()) {
-						responseObj.setResponseCode(200);
-						responseObj.payload.setFileName(data.get("fileName").getAsString());
-						responseObj.payload.setFileSize(file.length());
-						out.writeUTF(gson.toJson(responseObj));
-						out.flush();
-						BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
-						int byteRead;
-						long byteReaded = 0;
-						while ((byteRead = bis.read(buffer)) != -1) {
-							out.write(buffer, 0, byteRead);
-							byteReaded += byteRead;
-							trackProgress(file.length(), byteReaded);
+					if(new GroupController().isMember(userController.getUserName(), data.get("groupName").getAsString())) {
+						File file = new File(this.currentPath.resolve(data.get("groupName").getAsString())
+								.resolve(data.get("folderName").getAsString()).resolve(data.get("fileName").getAsString())
+								.toString());
+						if (file.exists()) {
+							responseObj.setResponseCode(200);
+							responseObj.payload.setFileName(data.get("fileName").getAsString());
+							responseObj.payload.setFileSize(file.length());
+							out.writeUTF(gson.toJson(responseObj));
+							out.flush();
+							BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+							int byteRead;
+							long byteReaded = 0;
+							while ((byteRead = bis.read(buffer)) != -1) {
+								out.write(buffer, 0, byteRead);
+								byteReaded += byteRead;
+								trackProgress(file.length(), byteReaded);
+								out.flush();
+							}
+							bis.close();
+							System.out.println();
+							System.out.println("Sent file successfully!");
+						} else {
+							responseObj.setResponseCode(404);
+							out.writeUTF(gson.toJson(responseObj));
 							out.flush();
 						}
-						bis.close();
-						System.out.println();
-						System.out.println("Sent file successfully!");
-					} else {
-						responseObj.setResponseCode(404);
+					}
+					else {
+						responseObj.setResponseCode(403);
 						out.writeUTF(gson.toJson(responseObj));
 						out.flush();
 					}
@@ -226,7 +227,6 @@ public class ClientHandler implements Runnable {
 					out.flush();
 					break;
 				}
-
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
