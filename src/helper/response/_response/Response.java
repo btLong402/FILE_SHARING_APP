@@ -25,5 +25,13 @@ public class Response {
 	public void setResponseCode(int responseCode) {
 		this.responseCode = responseCode;
 	}
+
+	public BasePayload getPayload() {
+		return payload;
+	}
+
+	public void setPayload(BasePayload payload) {
+		this.payload = payload;
+	}
 	
 }

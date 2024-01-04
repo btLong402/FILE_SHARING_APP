@@ -3,6 +3,8 @@ package helper.response.payload;
 import java.util.List;
 
 import models.group_model.GroupModel;
+import models.group_model.ListOfAppliedGroups;
+import models.group_model.ListOfJoinRequests;
 
 public abstract class BasePayload {
 	public void setFileName(String fileName) {}
