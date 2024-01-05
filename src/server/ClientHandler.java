@@ -1,9 +1,11 @@
 package server;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -14,7 +16,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
+import controllers.folder_controller.FolderController;
+import controllers.group_controller.GroupController;
 import controllers.user_controller.UserController;
+import helper.response.FactoryResponse;
+import helper.response._response.Response;
+import helper.response.payload.EmptyPayload;
 
 public class ClientHandler implements Runnable {
 	private final Socket clientSocket;
@@ -39,11 +46,10 @@ public class ClientHandler implements Runnable {
 			while (true) {
 				byte[] buffer = new byte[4096];
 				cmd = in.readUTF();
-				System.out.println(cmd);
 //				StringTokenizer command = new StringTokenizer(cmd, " ");
 				JsonObject request = gson.fromJson(cmd, JsonObject.class);
 				System.out.println("Request from client: " + this.clientSocket.getInetAddress().getHostAddress());
-				String response = "";
+				System.out.println(cmd);
 				String key = request.get("messageType").getAsString();
 				if (key.equals("EXIT")) {
 					out.close();
@@ -54,23 +60,40 @@ public class ClientHandler implements Runnable {
 					break;
 				}
 				JsonObject data = request.getAsJsonObject("payload");
+				Response responseObj = FactoryResponse.intialResponse(key);
 				switch (key) {
 				case "CREATE_GROUP":
+					String path = currentPath.resolve(data.get("groupName").getAsString()).toString();
+					File group = new File(path);
+					if (!group.exists()) {
 
+						boolean result = group.mkdirs(); // Tạo thư mục và tất cả các thư mục cha nếu chưa tồn tại
+						if (result) {
+							System.out.println("Create group success!");
+							new GroupController().createGroup(userController.getUserName(),
+									data.get("groupName").getAsString());
+							responseObj.setResponseCode(201);
+						} else {
+							System.out.println("Can not create!");
+							responseObj.setResponseCode(501);
+						}
+						out.writeUTF(gson.toJson(responseObj));
+						out.flush();
+
+					} else {
+						responseObj.setResponseCode(409);
+						out.writeUTF(gson.toJson(responseObj));
+						out.flush();
+					}
 					break;
 				case "UPLOAD_FILE":
-					File Group = new File(this.currentPath.resolve(data.get("groupName").getAsString()).toString());
-					if (Group.exists()) {
-						response = "{'statusCode': 200}";
-						out.writeUTF(response);
-						out.flush();
+					if (new GroupController().isMember(userController.getUserName(), data.get("groupName").getAsString())) {
 						File folder = new File(this.currentPath.resolve(data.get("groupName").getAsString())
 								.resolve(data.get("folderName").getAsString()).toString());
 						if (folder.exists()) {
-							response = "{'statusCode': 200}";
-							out.writeUTF(response);
+							responseObj.setResponseCode(200);
+							out.writeUTF(gson.toJson(responseObj));
 							out.flush();
-
 							long fileSize = data.get("fileSize").getAsLong();
 							int bytesRead;
 							long byteReaded = 0;
@@ -80,6 +103,7 @@ public class ClientHandler implements Runnable {
 							File f = new File(destinationPath);
 							BufferedOutputStream bos;
 							try {
+								System.out.println("Upload start. Please wait!");
 								bos = new BufferedOutputStream(new FileOutputStream(f));
 								long tmp = fileSize;
 								while (tmp != 0) {
@@ -92,51 +116,120 @@ public class ClientHandler implements Runnable {
 								}
 								System.out.println();
 								System.out.println("Upload successfully!");
-								response = "{'statusCode': 200}";
-								out.writeUTF(response);
-								out.flush();
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
 						} else {
-							response = "{'statusCode': 404}";
-							out.writeUTF(response);
+							responseObj.setResponseCode(404);
+							out.writeUTF(gson.toJson(responseObj));
 							out.flush();
 						}
 					} else {
-						response = "{'statusCode': 404}";
-						out.writeUTF(response);
+						responseObj.setResponseCode(403);
+						out.writeUTF(gson.toJson(responseObj));
 						out.flush();
 					}
 					break;
 				case "DOWNLOAD_FILE":
+					if(new GroupController().isMember(userController.getUserName(), data.get("groupName").getAsString())) {
+						File file = new File(this.currentPath.resolve(data.get("groupName").getAsString())
+								.resolve(data.get("folderName").getAsString()).resolve(data.get("fileName").getAsString())
+								.toString());
+						if (file.exists()) {
+							responseObj.setResponseCode(200);
+							responseObj.payload.setFileName(data.get("fileName").getAsString());
+							responseObj.payload.setFileSize(file.length());
+							out.writeUTF(gson.toJson(responseObj));
+							out.flush();
+							BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+							int byteRead;
+							long byteReaded = 0;
+							while ((byteRead = bis.read(buffer)) != -1) {
+								out.write(buffer, 0, byteRead);
+								byteReaded += byteRead;
+								trackProgress(file.length(), byteReaded);
+								out.flush();
+							}
+							bis.close();
+							System.out.println();
+							System.out.println("Sent file successfully!");
+						} else {
+							responseObj.setResponseCode(404);
+							responseObj.setPayload(new EmptyPayload());
+							out.writeUTF(gson.toJson(responseObj));
+							out.flush();
+						}
+					}
+					else {
+						responseObj.setResponseCode(403);
+						responseObj.setPayload(new EmptyPayload());
+						out.writeUTF(gson.toJson(responseObj));
+						out.flush();
+					}
 					break;
 				case "LOGIN":
 					if (userController.signIn(data.get("userName").getAsString(), data.get("password").getAsString())) {
-						response = "{'statusCode': 200}";
+						responseObj.setResponseCode(200);
+						out.writeUTF(gson.toJson(responseObj));
+						out.flush();
 					} else {
-						response = "{'statusCode': 404}";
+						responseObj.setResponseCode(404);
+						out.writeUTF(gson.toJson(responseObj));
+						out.flush();
 					}
-					out.writeUTF(response);
-					out.flush();
 					break;
 				case "REGISTER":
 					if (userController.signUp(data.get("userName").getAsString(), data.get("password").getAsString())) {
-						response = "{'statusCode': 201}";
+						responseObj.setResponseCode(201);
+						out.writeUTF(gson.toJson(responseObj));
+						out.flush();
 					} else {
-						response = "{'statusCode': 409}";
+						responseObj.setResponseCode(409);
+						out.writeUTF(gson.toJson(responseObj));
+						out.flush();
 					}
-					out.writeUTF(response);
+					break;
+				case "LIST_ALL_GROUPS":
+					responseObj.setResponseCode(200);
+					responseObj.payload.setListGroups(new GroupController().listAllGroup());
+					out.writeUTF(gson.toJson(responseObj));
 					out.flush();
 					break;
+				case "CREATE_FOLDER":
+					File folder = new File(this.currentPath.resolve(data.get("groupName").getAsString())
+							.resolve(data.get("folderName").getAsString()).toString());
+					if (new GroupController().isMember(userController.getUserName(),
+							data.get("groupName").getAsString())) {
+						if (folder.exists()) {
+							responseObj.setResponseCode(409);
+							out.writeUTF(gson.toJson(responseObj));
+							out.flush();
+						} else {
+							if (folder.mkdir()) {
+								System.out.println("Create folder success!");
+								new FolderController().createFolder(data.get("folderName").getAsString(),
+										data.get("groupName").getAsString());
 
+								responseObj.setResponseCode(201);
+							} else {
+								System.out.println("Can not create!");
+								responseObj.setResponseCode(501);
+							}
+							out.writeUTF(gson.toJson(responseObj));
+							out.flush();
+						}
+					} else {
+						responseObj.setResponseCode(403);
+						out.writeUTF(gson.toJson(responseObj));
+						out.flush();
+					}
+					break;
 				default:
-					response = "{'statusCode': 400}";
-					out.writeUTF(response);
+					responseObj.setResponseCode(400);
+					out.writeUTF(gson.toJson(responseObj));
 					out.flush();
 					break;
 				}
-
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

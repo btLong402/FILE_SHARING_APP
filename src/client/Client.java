@@ -72,11 +72,19 @@ class Client {
 					if (isLogin == false) {
 						System.out.println("You do not have permission to create a group. Please log in.");
 					} else {
-						out.writeUTF(cmd);
+						System.out.print("Enter group-name: ");
+						groupName = sc.readLine();
+						requestObj.payload.setGroupName(groupName);
+						out.writeUTF(gson.toJson(requestObj));
 						out.flush();
-						responseCode = in.readInt();
-						if (responseCode == 501) {
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						if (response.get("responseCode").getAsInt() == 409) {
 							System.out.println("Group existed!");
+						} else if (response.get("responseCode").getAsInt() == 501) {
+							System.out.println("Server error!");
 						} else {
 							System.out.println("Create success!");
 						}
@@ -108,33 +116,29 @@ class Client {
 								response = gson.fromJson(res, JsonObject.class);
 								System.out.println("Response form server:");
 								System.out.println(res);
-								if (response.get("responseCode").getAsInt() == 404) {
-									System.out.println("Group does not exist!");
-								} else {
-									res = in.readUTF();
-									response = gson.fromJson(res, JsonObject.class);
-									System.out.println("Response form server:");
-									System.out.println(res);
-									if (response.get("responseCode").getAsInt() == 404) {
-										System.out.println("Folder does not exist!");
-									} else {
-										int data;
-										long byteSend = 0;
-										while ((data = bis.read(buffer)) != -1) {
-											out.write(buffer, 0, data);
-											byteSend += data;
-											trackProgress(fileSource.length(), byteSend);
-											out.flush();
-										}
-										bis.close();
-										System.out.println();
-										System.out.println("Uploaded!");
-										res = in.readUTF();
-										response = gson.fromJson(res, JsonObject.class);
-										System.out.println("Response form server:");
-										System.out.println(response.getAsJsonObject());
+								switch (response.get("responseCode").getAsInt()) {
+								case 200:
+									System.out.println("Upload start. Please wait!");
+									int data;
+									long byteSend = 0;
+									while ((data = bis.read(buffer)) != -1) {
+										out.write(buffer, 0, data);
+										byteSend += data;
+										trackProgress(fileSource.length(), byteSend);
+										out.flush();
 									}
-
+									bis.close();
+									System.out.println();
+									System.out.println("Uploaded!");
+									break;
+								case 404:
+									System.out.println("Folder or Group does not existed!");
+									break;
+								case 403:
+									System.out.println("You are not member of this group!");
+									break;
+								default:
+									break;
 								}
 							} catch (IOException e) {
 								e.printStackTrace();
@@ -162,9 +166,14 @@ class Client {
 						response = gson.fromJson(res, JsonObject.class);
 						System.out.println("Response form server:");
 						System.out.println(res);
-						if (response.get("responseCode").getAsInt() == 404) {
+						switch (response.get("responseCode").getAsInt()) {
+						case 404:
 							System.out.println("Group or Folder or File does not exists!!!");
-						} else {
+							break;
+						case 403:
+							System.out.println("You are not member of this group!");
+							break;
+						case 200:
 							payload = response.get("payload").getAsJsonObject();
 							long fileSize = payload.get("fileSize").getAsLong();
 							int bytesRead;
@@ -196,6 +205,9 @@ class Client {
 									e.printStackTrace();
 								}
 							}
+							break;
+						default:
+							break;
 						}
 					} else {
 						System.out.println("You do not have permission to download a file. Please log in.");
@@ -253,11 +265,56 @@ class Client {
 						}
 					}
 					break;
-				default:
-					responseCode = in.readInt();
-					if (responseCode == 404) {
-						System.out.println("Command not recognized!");
+				case "LIST_ALL_GROUPS":
+					if (isLogin == true) {
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+					} else {
+						System.out.println("You do not have permission to see list groups. Please log in!");
 					}
+					break;
+				case "CREATE_FOLDER":
+					if (isLogin == true) {
+						System.out.print("Enter group-name: ");
+						groupName = sc.readLine();
+						System.out.print("Enter folder-name: ");
+						folderName = sc.readLine();
+						requestObj.payload.setFolderName(folderName);
+						requestObj.payload.setGroupName(groupName);
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 201:
+							System.out.println("Create folder success!");
+							break;
+						case 409:
+							System.out.println("Folder existed!");
+							break;
+						case 403:
+							System.out.println("You are not a member in group!");
+							break;
+						case 501:
+							System.out.println("Server error!");
+							break;
+						default:
+							break;
+						}
+					} else {
+						System.out.println("You do not have permission to create a folder. Please log in!");
+					}
+					break;
+				default:
+					System.out.println("Command not recognized!");
 					break;
 				}
 			}
