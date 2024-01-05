@@ -319,8 +319,11 @@ class Client {
 						groupName = sc.readLine();
 						System.out.print("Enter folder-name: ");
 						folderName = sc.readLine();
+						System.out.print("Enter new name: ");
+						String newName = sc.readLine();
 						requestObj.payload.setFolderName(folderName);
 						requestObj.payload.setGroupName(groupName);
+						requestObj.payload.setNewFolderName(newName);
 						rq = gson.toJson(requestObj);
 						out.writeUTF(rq);
 						out.flush();
@@ -329,11 +332,11 @@ class Client {
 						System.out.println("Response form server:");
 						System.out.println(res);
 						switch (response.get("responseCode").getAsInt()) {
-						case 201:
-							System.out.println("Create folder success!");
+						case 200:
+							System.out.println("Rename folder successfully!");
 							break;
-						case 409:
-							System.out.println("Folder existed!");
+						case 404:
+							System.out.println("Folder does not exist!");
 							break;
 						case 403:
 							System.out.println("You are not a member in group!");
@@ -350,12 +353,15 @@ class Client {
 					break;
 				case "FOLDER_COPY":
 					if (isLogin == true) {
-						System.out.print("Enter group-name: ");
+						System.out.print("From group: ");
 						groupName = sc.readLine();
+						System.out.print("To group: ");
+						String toGroup = sc.readLine();
 						System.out.print("Enter folder-name: ");
 						folderName = sc.readLine();
 						requestObj.payload.setFolderName(folderName);
-						requestObj.payload.setGroupName(groupName);
+						requestObj.payload.from(groupName);
+						requestObj.payload.to(toGroup);
 						rq = gson.toJson(requestObj);
 						out.writeUTF(rq);
 						out.flush();
@@ -364,11 +370,11 @@ class Client {
 						System.out.println("Response form server:");
 						System.out.println(res);
 						switch (response.get("responseCode").getAsInt()) {
-						case 201:
-							System.out.println("Create folder success!");
+						case 200:
+							System.out.println("Copy folder successfully!");
 							break;
-						case 409:
-							System.out.println("Folder existed!");
+						case 404:
+							System.out.println("Folder does not exist!");
 							break;
 						case 403:
 							System.out.println("You are not a member in group!");
@@ -385,12 +391,15 @@ class Client {
 					break;
 				case "FOLDER_MOVE":
 					if (isLogin == true) {
-						System.out.print("Enter group-name: ");
+						System.out.print("From group: ");
 						groupName = sc.readLine();
+						System.out.print("To group: ");
+						String toGroup = sc.readLine();
 						System.out.print("Enter folder-name: ");
 						folderName = sc.readLine();
 						requestObj.payload.setFolderName(folderName);
-						requestObj.payload.setGroupName(groupName);
+						requestObj.payload.from(groupName);
+						requestObj.payload.to(toGroup);
 						rq = gson.toJson(requestObj);
 						out.writeUTF(rq);
 						out.flush();
@@ -399,11 +408,11 @@ class Client {
 						System.out.println("Response form server:");
 						System.out.println(res);
 						switch (response.get("responseCode").getAsInt()) {
-						case 201:
-							System.out.println("Create folder success!");
+						case 200:
+							System.out.println("Move folder successfully!");
 							break;
-						case 409:
-							System.out.println("Folder existed!");
+						case 404:
+							System.out.println("Folder does not exist!");
 							break;
 						case 403:
 							System.out.println("You are not a member in group!");
@@ -434,11 +443,11 @@ class Client {
 						System.out.println("Response form server:");
 						System.out.println(res);
 						switch (response.get("responseCode").getAsInt()) {
-						case 201:
-							System.out.println("Create folder success!");
+						case 200:
+							System.out.println("Delete folder successfully!");
 							break;
-						case 409:
-							System.out.println("Folder existed!");
+						case 404:
+							System.out.println("Folder does not exist!");
 							break;
 						case 403:
 							System.out.println("You are not a member in group!");

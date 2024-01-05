@@ -22,4 +22,7 @@ public class FolderController {
 			return true;
 		return false;
 	}
+	public boolean copy(String fromGroup, String toGroup, String folderName) {
+		return db.copyFolder(fromGroup, folderName, toGroup);
+	}
 }
