@@ -365,29 +365,80 @@ BEGIN
     END IF;
 END //
 
+CREATE FUNCTION CopyFolder(fromgroup_name VARCHAR(255), folder_name VARCHAR(255), toGroup_name VARCHAR(255))
+RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE from_folder_id VARCHAR(255);
+    DECLARE to_folder_id VARCHAR(255);
+    DECLARE to_group_exists INT;
 
+    SELECT folderID INTO from_folder_id
+    FROM Folder
+    WHERE folderName = folder_name AND groupName = fromgroup_name;
+
+    IF from_folder_id IS NULL THEN
+        RETURN FALSE;
+    END IF;
+
+    SELECT COUNT(*) INTO to_group_exists
+    FROM `Groups`
+    WHERE groupName = toGroup_name;
+
+    IF to_group_exists = 0 THEN
+        RETURN FALSE;
+    END IF;
+
+    SELECT folderID INTO to_folder_id
+    FROM Folder
+    WHERE folderName = folder_name AND groupName = toGroup_name;
+
+    IF to_folder_id IS NOT NULL THEN
+        RETURN FALSE;
+    ELSE
+        SET to_folder_id = UUID();
+        INSERT INTO Folder (folderID, folderName, groupName, createAt)
+        VALUES (to_folder_id, folder_name, toGroup_name, NOW());
+
+        INSERT INTO File (fileID, folderID, fName, fileSize, folderName, groupName)
+        SELECT UUID(), to_folder_id, fName, fileSize, folderName, toGroup_name
+        FROM File
+        WHERE folderID = from_folder_id;
+
+        RETURN TRUE;
+    END IF;
+END //
+DELIMITER //
 CREATE FUNCTION RemoveFolder(folder_name VARCHAR(255), group_name VARCHAR(255))
 RETURNS BOOLEAN DETERMINISTIC
 BEGIN
+    DECLARE folder_id VARCHAR(255);
     DECLARE folder_exists INT;
 
+    -- Get the folder ID
+    SELECT folderID INTO folder_id
+    FROM Folder
+    WHERE folderName = folder_name AND groupName = group_name;
+
     -- Check if the folder exists
-    SELECT COUNT(*)
-    INTO folder_exists
+    SELECT COUNT(*) INTO folder_exists
     FROM Folder
     WHERE folderName = folder_name AND groupName = group_name;
 
     IF folder_exists > 0 THEN
-        -- Folder exists, proceed to remove it
+        -- Delete files in the folder
+        DELETE FROM File
+        WHERE folderID = folder_id;
+
+        -- Remove the folder
         DELETE FROM Folder
-        WHERE folderName = folder_name AND groupName = group_name;
+        WHERE folderID = folder_id;
 
         RETURN TRUE; -- Return TRUE for successful folder removal
     ELSE
         -- Folder does not exist, or the folder does not belong to the specified group, return FALSE
         RETURN FALSE;
     END IF;
-END // 
+END //
 
 CREATE FUNCTION RenameFolder(group_name VARCHAR(255), folder_name VARCHAR(255), new_folder_name VARCHAR(255))
 RETURNS BOOLEAN DETERMINISTIC
@@ -513,4 +564,8 @@ BEGIN
         RETURN FALSE;
     END IF;
 END //
+
+
+
+
 DELIMITER ;
