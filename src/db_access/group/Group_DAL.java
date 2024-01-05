@@ -90,7 +90,6 @@ public class Group_DAL {
 		}
 		return false;
 	}
-
 	// admin remove a userName from a GroupName
 	public boolean removeMember(String userName, String groupName) {
 		try {
@@ -150,7 +149,6 @@ public class Group_DAL {
 		}
 		return false;
 	}
-
 	// List all Groups
 	public List<GroupModel> listAllGroup() {
 		List<GroupModel> groupList = new ArrayList<>();
