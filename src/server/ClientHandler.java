@@ -263,8 +263,8 @@ public class ClientHandler implements Runnable {
 						File folder = new File(this.currentPath.resolve(data.get("fromGroup").getAsString())
 								.resolve(data.get("folderName").getAsString()).toString());
 						if (folder.exists()) {
-							if (new FolderController().createFolder(data.get("folderName").getAsString(),
-									data.get("toGroup").getAsString())) {
+							if (new FolderController().copy(data.get("fromGroup").getAsString(),
+									 data.get("toGroup").getAsString(), data.get("folderName").getAsString())) {
 								Path fromGroup = Paths.get(this.currentPath.resolve(data.get("fromGroup").getAsString())
 										.resolve(data.get("folderName").getAsString()).toString());
 								Path toGroup = Paths.get(this.currentPath.resolve(data.get("toGroup").getAsString())
@@ -304,9 +304,9 @@ public class ClientHandler implements Runnable {
 								.resolve(data.get("folderName").getAsString()).toString());
 						if (Files.exists(sourcePath)) {
 							Path destinationPath = Paths.get(this.currentPath.resolve(data.get("toGroup").getAsString())
-								.resolve(data.get("folderName").getAsString()).toString());
+									.resolve(data.get("folderName").getAsString()).toString());
 							if (new FolderController().move(data.get("fromGroup").getAsString(),
-									data.get("toGroup").getAsString(),data.get("folderName").getAsString())) {
+									data.get("toGroup").getAsString(), data.get("folderName").getAsString())) {
 								moveFolder(sourcePath, destinationPath);
 								responseObj.setResponseCode(200);
 							} else {
@@ -326,7 +326,7 @@ public class ClientHandler implements Runnable {
 							data.get("groupName").getAsString())) {
 						Path desPath = Paths.get(this.currentPath.resolve(data.get("groupName").getAsString())
 								.resolve(data.get("folderName").getAsString()).toString());
-						
+
 						if (Files.exists(desPath)) {
 							if (new FolderController().delete(data.get("groupName").getAsString(),
 									data.get("folderName").getAsString())) {
@@ -392,27 +392,29 @@ public class ClientHandler implements Runnable {
 			e.printStackTrace();
 		}
 	}
+
 	public static void deleteFolder(Path sourPath) {
-    	try {
-            Files.walkFileTree(sourPath, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
-                }
+		try {
+			Files.walkFileTree(sourPath, new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					Files.delete(file);
+					return FileVisitResult.CONTINUE;
+				}
 
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
+				@Override
+				public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+					Files.delete(dir);
+					return FileVisitResult.CONTINUE;
+				}
+			});
 
-            System.out.println("Folder deleted successfully.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+			System.out.println("Folder deleted successfully.");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static void moveFolder(Path sourcePath, Path destinationPath) {
 		try {
 			Files.move(sourcePath, destinationPath);
@@ -421,8 +423,9 @@ public class ClientHandler implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
+
 	public static void clearLine() {
 		System.out.print("\r");
 		System.out.flush();

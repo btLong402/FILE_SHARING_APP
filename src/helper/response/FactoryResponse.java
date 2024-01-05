@@ -40,8 +40,7 @@ public class FactoryResponse {
 		case "JOIN_REQUEST_LIST":
 			return new Response(new JoinRequestListPayload());
 		default:
-			break;
+			return new Response(new EmptyPayload());
 		}
-		return null;
 	}
 }

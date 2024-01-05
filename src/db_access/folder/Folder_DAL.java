@@ -72,7 +72,7 @@ public class Folder_DAL {
 	public boolean copyFolder(String fromGroupName, String folderName, String toGroupName) {
 		try {
 			Connection connection = FTP_Db.getConnection();
-			String query = "SELECT RenameFolder(?,?,?) AS Success;";
+			String query = "SELECT CopyFolder(?,?,?) AS Success;";
 			try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 				preparedStatement.setString(1, fromGroupName);
 				preparedStatement.setString(2, folderName);
