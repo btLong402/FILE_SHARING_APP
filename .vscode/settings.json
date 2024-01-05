@@ -1,5 +1,13 @@
 {
     "cSpell.words": [
         "ftpdb"
-    ]
+    ],
+    "files.associations": {
+        "*.embeddedhtml": "html",
+        "*.tsx": "typescriptreact",
+        "*.cpp": "cpp",
+        "*.c": "c",
+        "*.h": "c",
+        "any": "cpp"
+    }
 }
