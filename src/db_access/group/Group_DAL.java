@@ -165,6 +165,63 @@ public class Group_DAL {
     return false;
   }
 
+	// admin remove a userName from a GroupName
+	public boolean removeMember(String userName, String groupName) {
+		try {
+			Connection connection = FTP_Db.getConnection();
+			String query = "SELECT LeaveGroup(?,?) AS Success;";
+			try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+				preparedStatement.setString(1, userName);
+				preparedStatement.setString(2, groupName);
+				try (ResultSet resultSet = preparedStatement.executeQuery()) {
+					if (resultSet.next()) {
+						return resultSet.getBoolean("Success");
+					}
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	//Check Admin of groupName
+	public boolean checkIsAdmin(String userName, String groupName) {
+		try {
+			Connection connection = FTP_Db.getConnection();
+			String query = "SELECT CheckIsAdmin(?,?) AS Success;";
+			try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+				preparedStatement.setString(1, userName);
+				preparedStatement.setString(2, groupName);
+				try (ResultSet resultSet = preparedStatement.executeQuery()) {
+					if (resultSet.next()) {
+						return resultSet.getBoolean("Success");
+					}
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	//Check Member of groupName
+	public boolean checkIsMember(String userName, String groupName) {
+		try {
+			Connection connection = FTP_Db.getConnection();
+			String query = "SELECT CheckIsMember(?,?) AS Success;";
+			try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+				preparedStatement.setString(1, userName);
+				preparedStatement.setString(2, groupName);
+				try (ResultSet resultSet = preparedStatement.executeQuery()) {
+					if (resultSet.next()) {
+						return resultSet.getBoolean("Success");
+					}
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
   //List all Groups
   public List<GroupModel> listAllGroup() {
     List<GroupModel> groupList = new ArrayList<>();
@@ -187,3 +244,4 @@ public class Group_DAL {
     return groupList;
   }
 }
+

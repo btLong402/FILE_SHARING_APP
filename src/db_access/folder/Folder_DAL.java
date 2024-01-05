@@ -69,7 +69,25 @@ public class Folder_DAL {
 		}
 		return false;
 	}
-	// when it comes to Folder Copy fromGroup,folder_Name,toGroup - we only need to call createFolder(String folder_Name, String toGroup)
+	public boolean copyFolder(String fromGroupName, String folderName, String toGroupName) {
+		try {
+			Connection connection = FTP_Db.getConnection();
+			String query = "SELECT RenameFolder(?,?,?) AS Success;";
+			try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+				preparedStatement.setString(1, fromGroupName);
+				preparedStatement.setString(2, folderName);
+				preparedStatement.setString(3, toGroupName);
+				try (ResultSet resultSet = preparedStatement.executeQuery()) {
+					if (resultSet.next()) {
+						return resultSet.getBoolean("Success");
+					}
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 	// when it comes to Folder Move fromGroup,folder_Name,toGroup - we only need to call createFolder(String folder_Name, String toGroup) and deleteFolder(folder_name, fromGroup)
 	
 	public List<String> folderContent(String groupName, String folderName) {
