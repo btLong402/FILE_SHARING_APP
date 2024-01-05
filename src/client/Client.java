@@ -313,6 +313,146 @@ class Client {
 						System.out.println("You do not have permission to create a folder. Please log in!");
 					}
 					break;
+				case "FOLDER_RENAME":
+					if (isLogin == true) {
+						System.out.print("Enter group-name: ");
+						groupName = sc.readLine();
+						System.out.print("Enter folder-name: ");
+						folderName = sc.readLine();
+						requestObj.payload.setFolderName(folderName);
+						requestObj.payload.setGroupName(groupName);
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 201:
+							System.out.println("Create folder success!");
+							break;
+						case 409:
+							System.out.println("Folder existed!");
+							break;
+						case 403:
+							System.out.println("You are not a member in group!");
+							break;
+						case 501:
+							System.out.println("Server error!");
+							break;
+						default:
+							break;
+						}
+					} else {
+						System.out.println("You do not have permission to create a folder. Please log in!");
+					}
+					break;
+				case "FOLDER_COPY":
+					if (isLogin == true) {
+						System.out.print("Enter group-name: ");
+						groupName = sc.readLine();
+						System.out.print("Enter folder-name: ");
+						folderName = sc.readLine();
+						requestObj.payload.setFolderName(folderName);
+						requestObj.payload.setGroupName(groupName);
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 201:
+							System.out.println("Create folder success!");
+							break;
+						case 409:
+							System.out.println("Folder existed!");
+							break;
+						case 403:
+							System.out.println("You are not a member in group!");
+							break;
+						case 501:
+							System.out.println("Server error!");
+							break;
+						default:
+							break;
+						}
+					} else {
+						System.out.println("You do not have permission to create a folder. Please log in!");
+					}
+					break;
+				case "FOLDER_MOVE":
+					if (isLogin == true) {
+						System.out.print("Enter group-name: ");
+						groupName = sc.readLine();
+						System.out.print("Enter folder-name: ");
+						folderName = sc.readLine();
+						requestObj.payload.setFolderName(folderName);
+						requestObj.payload.setGroupName(groupName);
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 201:
+							System.out.println("Create folder success!");
+							break;
+						case 409:
+							System.out.println("Folder existed!");
+							break;
+						case 403:
+							System.out.println("You are not a member in group!");
+							break;
+						case 501:
+							System.out.println("Server error!");
+							break;
+						default:
+							break;
+						}
+					} else {
+						System.out.println("You do not have permission to create a folder. Please log in!");
+					}
+					break;
+				case "FOLDER_DELETE":
+					if (isLogin == true) {
+						System.out.print("Enter group-name: ");
+						groupName = sc.readLine();
+						System.out.print("Enter folder-name: ");
+						folderName = sc.readLine();
+						requestObj.payload.setFolderName(folderName);
+						requestObj.payload.setGroupName(groupName);
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 201:
+							System.out.println("Create folder success!");
+							break;
+						case 409:
+							System.out.println("Folder existed!");
+							break;
+						case 403:
+							System.out.println("You are not a member in group!");
+							break;
+						case 501:
+							System.out.println("Server error!");
+							break;
+						default:
+							break;
+						}
+					} else {
+						System.out.println("You do not have permission to create a folder. Please log in!");
+					}
+					break;
 				default:
 					System.out.println("Command not recognized!");
 					break;
