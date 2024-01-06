@@ -134,6 +134,9 @@ class Client {
 								case 404:
 									System.out.println("Folder or Group does not existed!");
 									break;
+								case 409:
+									System.out.println("File existed!");
+									break;
 								case 403:
 									System.out.println("You are not member of this group!");
 									break;
