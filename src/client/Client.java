@@ -118,7 +118,6 @@ class Client {
                   );
                   out.writeUTF(rq);
                   out.flush();
-
                   res = in.readUTF();
                   response = gson.fromJson(res, JsonObject.class);
                   System.out.println("Response form server:");
