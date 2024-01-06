@@ -116,22 +116,24 @@ class Client {
 								BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileSource));
 								out.writeUTF(rq);
 								out.flush();
+								
+								System.out.println("Upload start. Please wait!");
+								int data;
+								long byteSend = 0;
+								while ((data = bis.read(buffer)) != -1) {
+									out.write(buffer, 0, data);
+									byteSend += data;
+									trackProgress(fileSource.length(), byteSend);
+									out.flush();
+								}
+								
+								bis.close();
 								res = in.readUTF();
 								response = gson.fromJson(res, JsonObject.class);
 								System.out.println("Response form server:");
 								System.out.println(res);
 								switch (response.get("responseCode").getAsInt()) {
 								case 200:
-									System.out.println("Upload start. Please wait!");
-									int data;
-									long byteSend = 0;
-									while ((data = bis.read(buffer)) != -1) {
-										out.write(buffer, 0, data);
-										byteSend += data;
-										trackProgress(fileSource.length(), byteSend);
-										out.flush();
-									}
-									bis.close();
 									System.out.println();
 									System.out.println("Uploaded!");
 									break;
@@ -469,6 +471,92 @@ class Client {
 						System.out.println("You do not have permission to create a folder. Please log in!");
 					}
 					break;
+					// “fileName”:”string”,  “groupName”:”string”, “folderName”:”string”, “newFileName”:”string”
+
+				case "FILE_RENAME":
+					if (isLogin == true) {
+						System.out.print("Enter group-name: ");
+						groupName = sc.readLine();
+						System.out.print("Enter folder-name: ");
+						folderName = sc.readLine();
+						System.out.print("Enter file name that you want to rename: ");
+						String fileName = sc.readLine();
+						System.out.print("Enter new name: ");
+						String newName = sc.readLine();
+						requestObj.payload.setFileName(fileName);
+						requestObj.payload.setFolderName(folderName);
+						requestObj.payload.setGroupName(groupName);
+						requestObj.payload.setNewFileName(newName);
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 200:
+							System.out.println("Rename file successfully!");
+							break;
+						case 404:
+							System.out.println("Folder or File does not exist!");
+							break;
+						case 403:
+							System.out.println("You are not a member in group!");
+							break;
+						case 501:
+							System.out.println("Server error!");
+							break;
+						default:
+							break;
+						}
+					} else {
+						System.out.println("You do not have permission to rename a file. Please log in!");
+					}
+					break;
+				case "FILE_COPY":
+					if (isLogin == true) {
+						System.out.print("From group: ");
+						groupName = sc.readLine();
+						System.out.print("To group: ");
+						String toGroup = sc.readLine();
+						System.out.print("From folder: ");
+						folderName = sc.readLine();
+						System.out.print("To folder: ");
+						String toFolder = sc.readLine();
+						System.out.print("Enter file name: ");
+						String fileName = sc.readLine();
+						requestObj.payload.from(groupName,folderName);
+						requestObj.payload.to(toGroup,toFolder);
+						requestObj.payload.setFileName(fileName);
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 200:
+							System.out.println("Copy folder successfully!");
+							break;
+						case 404:
+							System.out.println("Folder or File does not exist!");
+							break;
+						case 403:
+							System.out.println("You are not a member in group!");
+							break;
+						case 501:
+							System.out.println("Server error!");
+							break;
+						default:
+							break;
+						}
+					} else {
+						System.out.println("You do not have permission to create a folder. Please log in!");
+					}
+					break;
+					
 				case "HELP":
 					printUsage();
 					break;

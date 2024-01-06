@@ -13,7 +13,7 @@ def delete_folder_contents(folder_path):
                     os.remove(item_path)
                 elif os.path.isdir(item_path):
                     shutil.rmtree(item_path)
-            print(f"Nội dung của thư mục {folder_path} đã được xóa thành công.")
+            print(f"Nội dung của thư mục {folder_path.encode('utf-8').decode('utf-8')} đã được xóa thành công.")
         else:
             print(f"Thư mục {folder_path} không tồn tại.")
     except Exception as e:

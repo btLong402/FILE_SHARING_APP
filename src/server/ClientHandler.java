@@ -26,6 +26,7 @@ import controllers.file_controller.FileController;
 import controllers.folder_controller.FolderController;
 import controllers.group_controller.GroupController;
 import controllers.user_controller.UserController;
+
 import helper.response.FactoryResponse;
 import helper.response._response.Response;
 import helper.response.payload.EmptyPayload;
@@ -272,7 +273,7 @@ public class ClientHandler implements Runnable {
 								.resolve(data.get("folderName").getAsString()).toString());
 						if (folder.exists()) {
 							if (new FolderController().copy(data.get("fromGroup").getAsString(),
-									 data.get("toGroup").getAsString(), data.get("folderName").getAsString())) {
+									data.get("toGroup").getAsString(), data.get("folderName").getAsString())) {
 								Path fromGroup = Paths.get(this.currentPath.resolve(data.get("fromGroup").getAsString())
 										.resolve(data.get("folderName").getAsString()).toString());
 								Path toGroup = Paths.get(this.currentPath.resolve(data.get("toGroup").getAsString())
@@ -353,6 +354,94 @@ public class ClientHandler implements Runnable {
 					out.writeUTF(gson.toJson(responseObj));
 					out.flush();
 					break;
+				case "FILE_RENAME":
+					if (new GroupController().isMember(userController.getUserName(),
+							data.get("groupName").getAsString())) {
+						File folder = new File(this.currentPath.resolve(data.get("groupName").getAsString())
+								.resolve(data.get("folderName").getAsString()).toString());
+						if (folder.exists()) {
+							File file = new File(this.currentPath.resolve(data.get("groupName").getAsString())
+									.resolve(data.get("folderName").getAsString())
+									.resolve(data.get("fileName").getAsString()).toString());
+							if (file.exists()) {
+								if (new FileController().rename(data.get("fileName").getAsString(),
+										data.get("newFileName").getAsString(), data.get("groupName").getAsString(),
+										data.get("folderName").getAsString())) {
+									File newFile = new File(
+											this.currentPath.resolve(data.get("groupName").getAsString())
+													.resolve(data.get("folderName").getAsString())
+													.resolve(data.get("newFileName").getAsString()).toString());
+									file.renameTo(newFile);
+									responseObj.setResponseCode(200);
+
+								} else {
+									responseObj.setResponseCode(501);
+								}
+							} else {
+								responseObj.setResponseCode(404);
+							}
+						} else {
+							responseObj.setResponseCode(404);
+						}
+					} else {
+						responseObj.setResponseCode(403);
+					}
+					out.writeUTF(gson.toJson(responseObj));
+					out.flush();
+					break;
+
+				case "FILE_COPY":
+					if (new GroupController().isMember(userController.getUserName(),
+							data.get("fromGroup").getAsString())
+							&& new GroupController().isMember(userController.getUserName(),
+									data.get("toGroup").getAsString())) {
+						File folder = new File(this.currentPath.resolve(data.get("fromGroup").getAsString())
+								.resolve(data.get("folderName").getAsString()).toString());
+						if (folder.exists()) {
+							Path fromFolder = Paths
+									.get(this.currentPath.resolve(data.get("fromGroup").getAsString())
+											.resolve(data.get("fromFolder").getAsString())
+											.resolve(data.get("fileName").getAsString()).toString());
+							if (Files.exists(fromFolder)) {
+								if (new FileController().copy(data.get("fileName").getAsString(),
+										Files.size(fromFolder), data.get("fromGroup").getAsString(), 
+										data.get("toGroup").getAsString(),data.get("fromFolder").getAsString(),
+										data.get("toFolder").getAsString())) {
+							
+									Path toFolder = Paths.get(this.currentPath.resolve(data.get("toGroup").getAsString())
+											.resolve(data.get("toFolder").getAsString())
+											.resolve(data.get("fileName").getAsString()).toString());
+									try {
+										Files.copy(fromFolder,toFolder);
+										// Check if the copy operation was successful
+										if (Files.exists(toFolder)) {
+											responseObj.setResponseCode(200);
+										} else {
+											new FileController().delete(data.get("fileName").getAsString(), 
+													data.get("toGroup").getAsString(),
+													data.get("toFolder").getAsString());
+											responseObj.setResponseCode(501);
+										}
+									} catch (Exception e) {
+										// TODO: handle exception
+										e.printStackTrace();
+									}
+								} else {
+									responseObj.setResponseCode(501);
+								}
+							} else {
+								responseObj.setResponseCode(404);
+							}
+						} else {
+							responseObj.setResponseCode(404);
+						}
+					} else {
+						responseObj.setResponseCode(403);
+					}
+					out.writeUTF(gson.toJson(responseObj));
+					out.flush();
+					break;
+
 				default:
 					break;
 				}
