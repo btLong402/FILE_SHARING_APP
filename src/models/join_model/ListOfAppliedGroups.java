@@ -1,8 +1,8 @@
-package models.group_model;
+package models.join_model;
 
-public class ListOfJoinRequests {
+public class ListOfAppliedGroups {
 	private String groupName;
-	private String requestedUserName;
+	private String status;
 	private String requestAt;
 	public String getGroupName() {
 		return groupName;
@@ -10,11 +10,11 @@ public class ListOfJoinRequests {
 	public void setGroupName(String groupName) {
 		this.groupName = groupName;
 	}
-	public String getRequestedUserName() {
-		return requestedUserName;
+	public String getStatus() {
+		return status;
 	}
-	public void setRequestedUserName(String requestedUserName) {
-		this.requestedUserName = requestedUserName;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 	public String getRequestAt() {
 		return requestAt;
