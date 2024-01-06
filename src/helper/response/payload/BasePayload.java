@@ -5,9 +5,9 @@ import java.util.List;
 import models.file_model.FileModel;
 import models.group_model.GroupModel;
 import models.group_model.ListOfMembers;
-import models.group_model.ListOfAppliedGroups;
-import models.group_model.ListOfInvitation;
-import models.group_model.ListOfJoinRequests;
+import models.join_model.ListOfAppliedGroups;
+import models.join_model.ListOfInvitation;
+import models.join_model.ListOfJoinRequests;
 
 public abstract class BasePayload {
 	public void setFileName(String fileName) {}

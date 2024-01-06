@@ -3,6 +3,7 @@ package models.group_model;
 public class ListOfMembers {
 	private String userName;
 	private String role;
+	
 	public String getUserName() {
 		return userName;
 	}
@@ -20,5 +21,4 @@ public class ListOfMembers {
 		this.userName = userName;
 		this.role = role;
 	}
-	
 }
