@@ -407,7 +407,7 @@ BEGIN
         RETURN TRUE;
     END IF;
 END //
-DELIMITER //
+
 CREATE FUNCTION RemoveFolder(folder_name VARCHAR(255), group_name VARCHAR(255))
 RETURNS BOOLEAN DETERMINISTIC
 BEGIN
@@ -569,7 +569,6 @@ BEGIN
         RETURN FALSE;
     END IF;
 END //
-
 
 
 
