@@ -23,4 +23,8 @@ public class FileController {
 			return true;
 		return false;
 	}
+	public boolean copy(String fileName, long fileSize, String fromGroup, String toGroup, String fromFolder, 
+			String toFolder) {
+		return db.createFile(fileName, fileSize, toGroup, toFolder);
+	}
 }
