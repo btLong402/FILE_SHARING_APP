@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import models.group_model.GroupModel;
+import models.group_model.ListOfMembers;
 
 public class Group_DAL {
 
@@ -167,5 +168,23 @@ public class Group_DAL {
 			e.printStackTrace();
 		}
 		return groupList;
+	}
+	public List<ListOfMembers> listMember(String groupName) {
+		List<ListOfMembers> memberList = new ArrayList<>();
+		try {
+			Connection connection = FTP_Db.getConnection();
+			String query = "SELECT userName, mRole FROM `MemberOfGroup` WHERE groupName = ?;";
+			try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+				preparedStatement.setString(1, groupName);
+				try (ResultSet resultSet = preparedStatement.executeQuery()) {
+					while (resultSet.next()) {
+						memberList.add(new ListOfMembers(resultSet.getString("userName"), resultSet.getString("mRole")));
+					}
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return memberList;
 	}
 }
