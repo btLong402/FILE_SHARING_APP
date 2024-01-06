@@ -1,16 +1,14 @@
 package client;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import helper.request.FactoryRequest;
+import helper.request._request.Request;
 import java.io.*;
 import java.net.*;
 import java.nio.file.Paths;
 import java.util.*;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-
-import helper.request.FactoryRequest;
-import helper.request._request.Request;
 
 // Client class
 class Client {
@@ -92,9 +90,9 @@ class Client {
 				case "UPLOAD_FILE":
 					if (isLogin == true) {
 						if (!command.hasMoreTokens()) {
-						    System.out.println("Miss file path!");
-						    System.out.println("Use command \"Help\" to show the usage!");
-						    break;
+							System.out.println("Miss file path!");
+							System.out.println("Use command \"Help\" to show the usage!");
+							break;
 						}
 						filePath = command.nextToken();
 						File fileSource = new File(filePath);
@@ -116,24 +114,23 @@ class Client {
 								BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileSource));
 								out.writeUTF(rq);
 								out.flush();
-								
-								System.out.println("Upload start. Please wait!");
-								int data;
-								long byteSend = 0;
-								while ((data = bis.read(buffer)) != -1) {
-									out.write(buffer, 0, data);
-									byteSend += data;
-									trackProgress(fileSource.length(), byteSend);
-									out.flush();
-								}
-								
-								bis.close();
+
 								res = in.readUTF();
 								response = gson.fromJson(res, JsonObject.class);
 								System.out.println("Response form server:");
 								System.out.println(res);
 								switch (response.get("responseCode").getAsInt()) {
 								case 200:
+									System.out.println("Upload start. Please wait!");
+									int data;
+									long byteSend = 0;
+									while ((data = bis.read(buffer)) != -1) {
+										out.write(buffer, 0, data);
+										byteSend += data;
+										trackProgress(fileSource.length(), byteSend);
+										out.flush();
+									}
+									bis.close();
 									System.out.println();
 									System.out.println("Uploaded!");
 									break;
@@ -471,7 +468,8 @@ class Client {
 						System.out.println("You do not have permission to create a folder. Please log in!");
 					}
 					break;
-					// “fileName”:”string”,  “groupName”:”string”, “folderName”:”string”, “newFileName”:”string”
+				// “fileName”:”string”, “groupName”:”string”, “folderName”:”string”,
+				// “newFileName”:”string”
 
 				case "FILE_RENAME":
 					if (isLogin == true) {
@@ -526,8 +524,8 @@ class Client {
 						String toFolder = sc.readLine();
 						System.out.print("Enter file name: ");
 						String fileName = sc.readLine();
-						requestObj.payload.from(groupName,folderName);
-						requestObj.payload.to(toGroup,toFolder);
+						requestObj.payload.from(groupName, folderName);
+						requestObj.payload.to(toGroup, toFolder);
 						requestObj.payload.setFileName(fileName);
 						rq = gson.toJson(requestObj);
 						out.writeUTF(rq);
@@ -556,7 +554,6 @@ class Client {
 						System.out.println("You do not have permission to create a folder. Please log in!");
 					}
 					break;
-					
 				case "HELP":
 					printUsage();
 					break;
@@ -597,22 +594,22 @@ class Client {
 		System.out.printf("\r");
 		System.out.flush();
 	}
+
 	// Function to print usage information
 	private static void printUsage() {
-	    System.out.println("Commands:");
-	    System.out.println("LOGIN - Log in to the system");
-	    System.out.println("REGISTER - Register a new user");
-	    System.out.println("CREATE_GROUP - Create a new group");
-	    System.out.println("UPLOAD_FILE <file_path> - Upload a file to a group");
-	    System.out.println("DOWNLOAD_FILE - Download a file from a group");
-	    System.out.println("CREATE_FOLDER - Create a new folder in a group");
-	    System.out.println("FOLDER_COPY - Copy a folder to another group");
-	    System.out.println("FOLDER_MOVE - Move a folder to another group");
-	    System.out.println("FOLDER_RENAME - Rename a folder in a group");
-	    System.out.println("FOLDER_DELETE - Delete a folder from a group");
-	    System.out.println("LIST_ALL_GROUPS - List all available groups");
-	    System.out.println("HELP - Show usage");
-	    System.out.println("EXIT - Exit the program");
+		System.out.println("Commands:");
+		System.out.println("LOGIN - Log in to the system");
+		System.out.println("REGISTER - Register a new user");
+		System.out.println("CREATE_GROUP - Create a new group");
+		System.out.println("UPLOAD_FILE <file_path> - Upload a file to a group");
+		System.out.println("DOWNLOAD_FILE - Download a file from a group");
+		System.out.println("CREATE_FOLDER - Create a new folder in a group");
+		System.out.println("FOLDER_COPY - Copy a folder to another group");
+		System.out.println("FOLDER_MOVE - Move a folder to another group");
+		System.out.println("FOLDER_RENAME - Rename a folder in a group");
+		System.out.println("FOLDER_DELETE - Delete a folder from a group");
+		System.out.println("LIST_ALL_GROUPS - List all available groups");
+		System.out.println("HELP - Show usage");
+		System.out.println("EXIT - Exit the program");
 	}
-
 }

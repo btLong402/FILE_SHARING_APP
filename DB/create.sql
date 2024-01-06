@@ -457,6 +457,11 @@ BEGIN
         SET folderName = new_folder_name
         WHERE folderName = folder_name AND groupName = group_name;
 
+        -- Update corresponding folder name in the File table
+        UPDATE `File`
+        SET folderName = new_folder_name
+        WHERE folderName = folder_name AND groupName = group_name;
+
         RETURN TRUE; -- Return TRUE for successful folder rename
     ELSE
         -- Folder does not exist in the specified group, return FALSE
