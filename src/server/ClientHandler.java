@@ -22,6 +22,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
+import controllers.file_controller.FileController;
 import controllers.folder_controller.FolderController;
 import controllers.group_controller.GroupController;
 import controllers.user_controller.UserController;
@@ -96,45 +97,46 @@ public class ClientHandler implements Runnable {
 							data.get("groupName").getAsString())) {
 						File folder = new File(this.currentPath.resolve(data.get("groupName").getAsString())
 								.resolve(data.get("folderName").getAsString()).toString());
-						if (folder.exists()) {
-							responseObj.setResponseCode(200);
-							out.writeUTF(gson.toJson(responseObj));
-							out.flush();
-							long fileSize = data.get("fileSize").getAsLong();
-							int bytesRead;
-							long byteReaded = 0;
-							String destinationPath = this.currentPath.resolve(data.get("groupName").getAsString())
-									.resolve(data.get("folderName").getAsString())
-									.resolve(data.get("fileName").getAsString()).toString();
-							File f = new File(destinationPath);
-							BufferedOutputStream bos;
-							try {
-								System.out.println("Upload start. Please wait!");
-								bos = new BufferedOutputStream(new FileOutputStream(f));
-								long tmp = fileSize;
-								while (tmp != 0) {
-									bytesRead = in.read(buffer);
-									bos.write(buffer, 0, bytesRead);
-									byteReaded += bytesRead;
-									trackProgress(fileSize, byteReaded);
-									tmp = tmp - bytesRead;
-									bos.flush();
+						if(folder.exists()) {
+							if (new FileController().createFile(data.get("fileName").getAsString(), data.get("fileSize").getAsLong(),data.get("groupName").getAsString() , data.get("folderName").getAsString())) {
+								long fileSize = data.get("fileSize").getAsLong();
+								int bytesRead;
+								long byteReaded = 0;
+								String destinationPath = this.currentPath.resolve(data.get("groupName").getAsString())
+										.resolve(data.get("folderName").getAsString())
+										.resolve(data.get("fileName").getAsString()).toString();
+								File f = new File(destinationPath);
+								BufferedOutputStream bos;
+								try {
+									System.out.println("Upload start. Please wait!");
+									bos = new BufferedOutputStream(new FileOutputStream(f));
+									long tmp = fileSize;
+									while (tmp != 0) {
+										bytesRead = in.read(buffer);
+										bos.write(buffer, 0, bytesRead);
+										byteReaded += bytesRead;
+										trackProgress(fileSize, byteReaded);
+										tmp = tmp - bytesRead;
+										bos.flush();
+									}
+									System.out.println();
+									System.out.println("Upload successfully!");
+									responseObj.setResponseCode(200);
+								} catch (IOException e) {
+									e.printStackTrace();
 								}
-								System.out.println();
-								System.out.println("Upload successfully!");
-							} catch (IOException e) {
-								e.printStackTrace();
+							}
+							else {
+								responseObj.setResponseCode(409);
 							}
 						} else {
 							responseObj.setResponseCode(404);
-							out.writeUTF(gson.toJson(responseObj));
-							out.flush();
 						}
 					} else {
 						responseObj.setResponseCode(403);
-						out.writeUTF(gson.toJson(responseObj));
-						out.flush();
 					}
+					out.writeUTF(gson.toJson(responseObj));
+					out.flush();
 					break;
 				case "DOWNLOAD_FILE":
 					if (new GroupController().isMember(userController.getUserName(),
