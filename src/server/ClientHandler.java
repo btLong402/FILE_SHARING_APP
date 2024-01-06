@@ -123,6 +123,7 @@ public class ClientHandler implements Runnable {
 										tmp = tmp - bytesRead;
 										bos.flush();
 									}
+									bos.close();
 									System.out.println();
 									System.out.println("Upload successfully!");
 								} catch (IOException e) {
