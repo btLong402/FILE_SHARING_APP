@@ -112,22 +112,24 @@ class Client {
 								BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileSource));
 								out.writeUTF(rq);
 								out.flush();
+								
+								System.out.println("Upload start. Please wait!");
+								int data;
+								long byteSend = 0;
+								while ((data = bis.read(buffer)) != -1) {
+									out.write(buffer, 0, data);
+									byteSend += data;
+									trackProgress(fileSource.length(), byteSend);
+									out.flush();
+								}
+								
+								bis.close();
 								res = in.readUTF();
 								response = gson.fromJson(res, JsonObject.class);
 								System.out.println("Response form server:");
 								System.out.println(res);
 								switch (response.get("responseCode").getAsInt()) {
 								case 200:
-									System.out.println("Upload start. Please wait!");
-									int data;
-									long byteSend = 0;
-									while ((data = bis.read(buffer)) != -1) {
-										out.write(buffer, 0, data);
-										byteSend += data;
-										trackProgress(fileSource.length(), byteSend);
-										out.flush();
-									}
-									bis.close();
 									System.out.println();
 									System.out.println("Uploaded!");
 									break;
