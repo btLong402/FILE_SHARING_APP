@@ -182,7 +182,7 @@ BEGIN
 	SELECT COUNT(*)
     INTO inJoinGroup
     FROM JoinGroup
-    WHERE userName = user_name AND groupName = group_name AND status = 'pending';
+    WHERE userName = user_name AND groupName = group_name and status = 'pending';
     
     IF isValidUser > 0 AND isValidGroup > 0 AND inJoinGroup = 0 THEN
         -- User exists in Users table and group exists in Groups table
@@ -228,8 +228,7 @@ BEGIN
     SELECT COUNT(*)
     INTO inJoinGroup
     FROM JoinGroup
-    WHERE userName = invitedUsername AND groupName = group_name AND status = 'pending';
-
+    WHERE userName = invitedUsername AND groupName = group_name and status = 'pending';
 	 -- Check if the invited user is already a member of the group
     SET isUserInGroup = CheckIsMember(invitedUsername, group_name);
     
