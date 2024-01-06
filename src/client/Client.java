@@ -462,6 +462,52 @@ class Client {
 						System.out.println("You do not have permission to create a folder. Please log in!");
 					}
 					break;
+				
+					// “fileName”:”string”,  “groupName”:”string”, “folderName”:”string”, “newFileName”:”string”
+
+				case "FILE_RENAME":
+					if (isLogin == true) {
+						System.out.print("Enter group-name: ");
+						groupName = sc.readLine();
+						System.out.print("Enter folder-name: ");
+						folderName = sc.readLine();
+						System.out.print("Enter file name that you want to rename: ");
+						String fileName = sc.readLine();
+						System.out.print("Enter new name: ");
+						String newName = sc.readLine();
+						requestObj.payload.setFileName(fileName);
+						requestObj.payload.setFolderName(folderName);
+						requestObj.payload.setGroupName(groupName);
+						requestObj.payload.setNewFileName(newName);
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 200:
+							System.out.println("Rename file successfully!");
+							break;
+						case 404:
+							System.out.println("Folder or File does not exist!");
+							break;
+						case 403:
+							System.out.println("You are not a member in group!");
+							break;
+						case 501:
+							System.out.println("Server error!");
+							break;
+						default:
+							break;
+						}
+					} else {
+						System.out.println("You do not have permission to rename a file. Please log in!");
+					}
+					break;
+				
+					
 				default:
 					System.out.println("Command not recognized!");
 					break;
