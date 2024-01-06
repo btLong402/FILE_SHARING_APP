@@ -11,7 +11,7 @@ CREATE TABLE `Users` (
 CREATE TABLE `Groups` (
     `groupName` VARCHAR(255) NOT NULL,
     `createBy` VARCHAR(255) NOT NULL,
-    `createAt` DATETIME NOT NULL,
+    `createAt` TIMESTAMP NOT NULL,
     PRIMARY KEY (`groupName`),
     CONSTRAINT `createBy` FOREIGN KEY (`createBy`) REFERENCES `Users`(`userName`)
 );
@@ -20,7 +20,7 @@ CREATE TABLE `Folder` (
 	`folderID` VARCHAR(255) NOT NULL,
     `folderName` VARCHAR(255) NOT NULL,
     `groupName` VARCHAR(255) NOT NULL,
-    `createAt` DATETIME NOT NULL,
+    `createAt` TIMESTAMP NOT NULL,
     PRIMARY KEY (`folderID`),
     CONSTRAINT `groupName` FOREIGN KEY (`groupName`) REFERENCES `Groups`(`groupName`)
 );
@@ -49,7 +49,7 @@ CREATE TABLE `JoinGroup` (
     `userName` VARCHAR(255) NOT NULL,
     `requestType` ENUM('join','invite') NOT NULL,
     `status` ENUM('pending','accepted','denied') NOT NULL,
-    `createAt` DATETIME NOT NULL,
+    `createAt` TIMESTAMP NOT NULL,
     `groupName` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`groupName`, `userName`),
     FOREIGN KEY (`userName`) REFERENCES `Users`(`userName`),
@@ -229,7 +229,6 @@ BEGIN
     INTO inJoinGroup
     FROM JoinGroup
     WHERE userName = invitedUsername AND groupName = group_name and status = 'pending';
-
 	 -- Check if the invited user is already a member of the group
     SET isUserInGroup = CheckIsMember(invitedUsername, group_name);
     

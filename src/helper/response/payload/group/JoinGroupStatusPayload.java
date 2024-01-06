@@ -3,7 +3,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import helper.response.payload.BasePayload;
-import models.group_model.ListOfAppliedGroups;
+import models.join_model.ListOfAppliedGroups;
 
 public class JoinGroupStatusPayload extends BasePayload {
 	List<ListOfAppliedGroups> listOfAppliedGroups = new ArrayList<ListOfAppliedGroups>();
