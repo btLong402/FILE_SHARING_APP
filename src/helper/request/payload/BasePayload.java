@@ -43,4 +43,14 @@ public abstract class BasePayload {
 
 	public void setNewFolderName(String newFolderName) {
 	}
+
+	public void setRequester(String requester) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setDecision(String decision) {
+		// TODO Auto-generated method stub
+		
+	}
 }

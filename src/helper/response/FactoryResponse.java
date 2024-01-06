@@ -30,7 +30,7 @@ public class FactoryResponse {
 		case "JOIN_GROUP":
 			return new Response(new JoinGroupPayload());
 		case "JOIN_GROUP_APPROVAL":
-			return new Response(new JoinGroupApprovalPayload());
+			return new Response(new ApprovalPayload());
 		case "INVITE_TO_GROUP":
 			return new Response(new InviteToGroupPayload());
 		case "LIST_OF_INVITAION":

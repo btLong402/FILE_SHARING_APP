@@ -58,7 +58,7 @@ public class FactoryRequest {
 			return new Request(messageType, new ListAllGroupPayload());
 		case "LIST_GROUP_MEMBERS":
 			return new Request(messageType, new ListGroupMemberPayload());
-		case "FOLDER_CONTENTS":
+		case "FOLDER_CONTENT":
 			return new Request(messageType, new FolderContentPayload());
 		case "FOLDER_RENAME":
 			return new Request(messageType, new FolderRenamePayload());
