@@ -99,6 +99,9 @@ public class ClientHandler implements Runnable {
 								.resolve(data.get("folderName").getAsString()).toString());
 						if(folder.exists()) {
 							if (new FileController().createFile(data.get("fileName").getAsString(), data.get("fileSize").getAsLong(),data.get("groupName").getAsString() , data.get("folderName").getAsString())) {
+								responseObj.setResponseCode(200);
+								out.writeUTF(gson.toJson(responseObj));
+								out.flush();
 								long fileSize = data.get("fileSize").getAsLong();
 								int bytesRead;
 								long byteReaded = 0;
@@ -121,22 +124,26 @@ public class ClientHandler implements Runnable {
 									}
 									System.out.println();
 									System.out.println("Upload successfully!");
-									responseObj.setResponseCode(200);
 								} catch (IOException e) {
 									e.printStackTrace();
 								}
 							}
 							else {
 								responseObj.setResponseCode(409);
+								out.writeUTF(gson.toJson(responseObj));
+								out.flush();
 							}
 						} else {
 							responseObj.setResponseCode(404);
+							out.writeUTF(gson.toJson(responseObj));
+							out.flush();
 						}
 					} else {
 						responseObj.setResponseCode(403);
+						out.writeUTF(gson.toJson(responseObj));
+						out.flush();
 					}
-					out.writeUTF(gson.toJson(responseObj));
-					out.flush();
+					
 					break;
 				case "DOWNLOAD_FILE":
 					if (new GroupController().isMember(userController.getUserName(),
@@ -244,7 +251,6 @@ public class ClientHandler implements Runnable {
 										.resolve(data.get("newFolderName").getAsString()).toString());
 								folder.renameTo(newFolder);
 								responseObj.setResponseCode(200);
-
 							} else {
 								responseObj.setResponseCode(501);
 							}
@@ -348,9 +354,6 @@ public class ClientHandler implements Runnable {
 					out.flush();
 					break;
 				default:
-					responseObj.setResponseCode(400);
-					out.writeUTF(gson.toJson(responseObj));
-					out.flush();
 					break;
 				}
 			}
