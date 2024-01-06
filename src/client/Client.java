@@ -462,8 +462,12 @@ class Client {
 						System.out.println("You do not have permission to create a folder. Please log in!");
 					}
 					break;
+				case "HELP":
+					printUsage();
+					break;
 				default:
 					System.out.println("Command not recognized!");
+					System.out.println("Use command \"Help\" to show the usage!");
 					break;
 				}
 			}
@@ -498,4 +502,22 @@ class Client {
 		System.out.printf("\r");
 		System.out.flush();
 	}
+	// Function to print usage information
+	private static void printUsage() {
+	    System.out.println("Commands:");
+	    System.out.println("LOGIN - Log in to the system");
+	    System.out.println("REGISTER - Register a new user");
+	    System.out.println("CREATE_GROUP - Create a new group");
+	    System.out.println("UPLOAD_FILE <file_path> - Upload a file to a group");
+	    System.out.println("DOWNLOAD_FILE - Download a file from a group");
+	    System.out.println("CREATE_FOLDER - Create a new folder in a group");
+	    System.out.println("FOLDER_COPY - Copy a folder to another group");
+	    System.out.println("FOLDER_MOVE - Move a folder to another group");
+	    System.out.println("FOLDER_RENAME - Rename a folder in a group");
+	    System.out.println("FOLDER_DELETE - Delete a folder from a group");
+	    System.out.println("LIST_ALL_GROUPS - List all available groups");
+	    System.out.println("HELP - Show usage");
+	    System.out.println("EXIT - Exit the program");
+	}
+
 }
