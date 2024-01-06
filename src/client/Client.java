@@ -47,7 +47,6 @@ class Client {
 				String filePath;
 				String uName;
 				String ps;
-				int responseCode;
 				byte[] buffer = new byte[4096];
 
 				if (isLogin == false) {
@@ -92,6 +91,11 @@ class Client {
 					break;
 				case "UPLOAD_FILE":
 					if (isLogin == true) {
+						if (!command.hasMoreTokens()) {
+						    System.out.println("Miss file path!");
+						    System.out.println("Use command \"Help\" to show the usage!");
+						    break;
+						}
 						filePath = command.nextToken();
 						File fileSource = new File(filePath);
 						if (!fileSource.exists()) {
