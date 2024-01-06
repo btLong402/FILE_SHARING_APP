@@ -55,7 +55,7 @@ public class File_DAL {
 			Connection connection = FTP_Db.getConnection();
 			String query = "SELECT RenameFile(?,?,?,?) AS Success;";
 			try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-				preparedStatement.setString(1, groupName);
+				preparedStatement.setString(1, fileName);
 				preparedStatement.setString(2, groupName);
 				preparedStatement.setString(3, folderName);
 				preparedStatement.setString(4, newFileName);
