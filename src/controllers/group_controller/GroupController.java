@@ -4,6 +4,7 @@ import java.util.List;
 
 import db_access.group.Group_DAL;
 import models.group_model.GroupModel;
+import models.group_model.ListOfMembers;
 
 public class GroupController {
 	List<GroupModel> groupList;
@@ -39,4 +40,8 @@ public class GroupController {
 		}
 		return false;
 	}
-}
+	
+	public List<ListOfMembers> listMember(String groupName) {
+		return db.listMember(groupName);
+	}
+} 

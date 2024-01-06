@@ -407,7 +407,7 @@ BEGIN
         RETURN TRUE;
     END IF;
 END //
-DELIMITER //
+
 CREATE FUNCTION RemoveFolder(folder_name VARCHAR(255), group_name VARCHAR(255))
 RETURNS BOOLEAN DETERMINISTIC
 BEGIN
@@ -454,6 +454,11 @@ BEGIN
     IF folder_exists > 0 THEN
         -- Folder exists in the specified group, proceed to rename it
         UPDATE Folder
+        SET folderName = new_folder_name
+        WHERE folderName = folder_name AND groupName = group_name;
+
+        -- Update corresponding entries in the File table
+        UPDATE File
         SET folderName = new_folder_name
         WHERE folderName = folder_name AND groupName = group_name;
 
@@ -564,7 +569,6 @@ BEGIN
         RETURN FALSE;
     END IF;
 END //
-
 
 
 

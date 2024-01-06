@@ -9,6 +9,7 @@ public class ListGroupMemberPayload extends BasePayload {
 	public void setGroupName(String groupName) {
 		// TODO Auto-generated method stub
 		super.setGroupName(groupName);
+		this.groupName = groupName;
 	}
 
 }
