@@ -457,8 +457,8 @@ BEGIN
         SET folderName = new_folder_name
         WHERE folderName = folder_name AND groupName = group_name;
 
-        -- Update corresponding entries in the File table
-        UPDATE File
+        -- Update corresponding folder name in the File table
+        UPDATE `File`
         SET folderName = new_folder_name
         WHERE folderName = folder_name AND groupName = group_name;
 
