@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import helper.response.payload.BasePayload;
+import models.folder_model.FolderContentsModel;
 
 
 public class FolderContentPayload extends BasePayload{
-	List<String> files = new ArrayList<String>();
+	List<FolderContentsModel> folderContents;
 	@Override
-	public void setFiles(List<String> files) {
-		this.files = files;
+	public void setFolderContents(List<FolderContentsModel> folderContents) {
+		this.folderContents = folderContents;
 	}
 }

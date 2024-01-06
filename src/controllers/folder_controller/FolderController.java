@@ -1,6 +1,9 @@
 package controllers.folder_controller;
 
+import java.util.List;
+
 import db_access.folder.Folder_DAL;
+import models.folder_model.FolderContentsModel;
 
 public class FolderController {
 	private Folder_DAL db = new Folder_DAL();
@@ -24,5 +27,9 @@ public class FolderController {
 	}
 	public boolean copy(String fromGroup, String toGroup, String folderName) {
 		return db.copyFolder(fromGroup, folderName, toGroup);
+	}
+	
+	public List<FolderContentsModel> folderContent(String groupName, String folderName){
+		return db.folderContent(groupName, folderName);
 	}
 }

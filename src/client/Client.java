@@ -1,20 +1,17 @@
 package client;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import helper.request.FactoryRequest;
 import helper.request._request.Request;
-import models.group_model.ListOfMembers;
 
 import java.io.*;
 import java.net.*;
 import java.nio.file.Paths;
 import java.util.*;
-import java.lang.reflect.Type;
 
 // Client class
 class Client {
@@ -60,7 +57,11 @@ class Client {
 					System.out.print('#' + userName.toUpperCase() + "> ");
 				}
 				String cmd = sc.readLine();
-
+				if (cmd.equals("")) {
+					System.out.println("Command not recognized!");
+					System.out.println("Use command \"Help\" to show the usage!");
+					continue;
+				}
 				StringTokenizer command = new StringTokenizer(cmd, " ");
 				String key = command.nextToken().toUpperCase();
 				if (key.equals("EXIT")) {
@@ -647,7 +648,42 @@ class Client {
 					break;
 				case "INVITE_TO_GROUP":
 					break;
-				case "LIST_GROUP_MEMBERS":
+				case "REMOVE_MEMBER":
+					if (isLogin) {
+						System.out.println("You do not have permission to create a group. Please log in.");
+					} else {
+						System.out.print("Enter group-name: ");
+						groupName = sc.readLine();
+						System.out.print("Enter member-name: ");
+						String memberName = sc.readLine();
+						requestObj.payload.setGroupName(groupName);
+						requestObj.payload.setMemberName(memberName);
+						out.writeUTF(gson.toJson(requestObj));
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 200:
+							System.out.println("Remove member successfully!");
+							break;
+						case 404:
+							System.out.println("Member does not exist!");
+							break;
+						case 403:
+							System.out.println("You are not admin of this group!");
+							break;
+						case 501:
+							System.out.println("Server error!");
+							break;
+						default:
+							System.out.println("You can not remove yourself!");
+							break;
+						}
+					}
+					break;
+				case "LEAVE_GROUP":
 					if (isLogin == false) {
 						System.out.println("You do not have permission to create a group. Please log in.");
 					} else {
@@ -662,16 +698,79 @@ class Client {
 						System.out.println(res);
 						switch (response.get("responseCode").getAsInt()) {
 						case 200:
-							JsonArray listOfMembersArray = response.getAsJsonObject().getAsJsonObject("payload").getAsJsonArray("listOfMembers");
-							printTableMember(listOfMembersArray, groupName);
+							System.out.println("Leave group successfully!");
 							break;
-
+						case 404:
+							System.out.println("You are not a member in group!");
+							break;
+						case 403:
+							System.out.println("You can not leave because you are admin of this group!");
+							break;
+						case 501:
+							System.out.println("Server error!");
+							break;
 						default:
 							break;
 						}
 					}
 					break;
+				case "LIST_GROUP_MEMBERS":
+					if (isLogin == false) {
+						System.out.println("You do not have permission to see member in this group. Please log in.");
+					} else {
+						System.out.print("Enter group-name: ");
+						groupName = sc.readLine();
+						requestObj.payload.setGroupName(groupName);
+						out.writeUTF(gson.toJson(requestObj));
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 200:
+							JsonArray listOfMembersArray = response.getAsJsonObject().getAsJsonObject("payload")
+									.getAsJsonArray("listOfMembers");
+							printTableMember(listOfMembersArray, groupName);
+							break;
+						default:
+							System.out.println("You are not a member in group!");
+							break;
+						}
+					}
+					break;
 				case "FOLDER_CONTENT":
+					if (isLogin) {
+						System.out.print("Enter group-name: ");
+						groupName = sc.readLine();
+						System.out.print("Enter folder-name: ");
+						folderName = sc.readLine();
+						requestObj.payload.setFolderName(folderName);
+						requestObj.payload.setGroupName(groupName);
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 200:
+							JsonArray folderContentArray = response.getAsJsonObject().getAsJsonObject("payload")
+									.getAsJsonArray("folderContents");
+							printTableFiles(folderContentArray, folderName, groupName);
+							break;
+						case 404:
+							System.out.println("Folder does not exist!");
+							break;
+						default:
+							System.out.println("You are not a member in group!");
+							break;
+						}
+					} else {
+						System.out.println(
+								"You do not have permission to see folder content in this group. Please log in.");
+					}
 					break;
 				case "HELP":
 					printUsage();
@@ -727,6 +826,7 @@ class Client {
 		System.out.println("FOLDER_MOVE - Move a folder to another group");
 		System.out.println("FOLDER_RENAME - Rename a folder in a group");
 		System.out.println("FOLDER_DELETE - Delete a folder from a group");
+		System.out.println("FOLDER_CONTENT - Content of the folder from a group");
 		System.out.println("FILE_RENAME - Rename a file");
 		System.out.println("FILE_COPY - Copy a file to another folder");
 		System.out.println("FILE_MOVE - Move a file to another folder");
@@ -742,15 +842,36 @@ class Client {
 		System.out.printf("| %-20s | %-15s |\n", "Member", "Role");
 		System.out.println("+----------------------+-----------------+");
 		for (JsonElement memberElement : list) {
-		    JsonObject memberObject = memberElement.getAsJsonObject();
-		    String userName = memberObject.get("userName").getAsString();
-		    String role = memberObject.get("role").getAsString();
-		    printTableRow(userName, role);
+			JsonObject memberObject = memberElement.getAsJsonObject();
+			String userName = memberObject.get("userName").getAsString();
+			String role = memberObject.get("role").getAsString();
+			printTableRow(userName, role);
 		}
 	}
 
-	private static void printTableRow(String member, String role) {
-		System.out.printf("| %-20s | %-15s |\n", member, role);
+	private static void printTableFiles(JsonArray list, String folderName, String groupName) {
+		System.out.printf("Content of `%s` Folder in `%s` Group \n", folderName, groupName);
 		System.out.println("+----------------------+-----------------+");
+		System.out.printf("| %-20s | %-15s |\n", "File name", "File size");
+		System.out.println("+----------------------+-----------------+");
+		for (JsonElement element : list) {
+			JsonObject fileObject = element.getAsJsonObject();
+			String fileName = fileObject.get("fileName").getAsString();
+			long fileSize = fileObject.get("fileSize").getAsLong();
+			String sizeInMB = String.format("%.3f MB", convertBytesToMB(fileSize));
+			printTableRow(fileName, sizeInMB);
+		}
+	}
+
+	private static void printTableRow(String column1, String column2) {
+		System.out.printf("| %-20s | %-15s |\n", column1, column2);
+		System.out.println("+----------------------+-----------------+");
+	}
+//	private static double convertBytesToKB(long bytes) {
+//        return bytes / 1024.0; // 1 KB = 1024 bytes
+//    }
+
+	private static double convertBytesToMB(long bytes) {
+		return bytes / (1024.0 * 1024.0); // 1 MB = 1024 KB, 1 KB = 1024 bytes
 	}
 }

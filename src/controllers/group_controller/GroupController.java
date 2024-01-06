@@ -12,7 +12,6 @@ public class GroupController {
 
 	public boolean createGroup(String userName, String groupName) {
 		return db.createGroup(userName, groupName);
-
 	}
 
 	public boolean isAdmin(String userName, String groupName) {
@@ -27,21 +26,19 @@ public class GroupController {
 		return db.checkIsMember(userName, groupName);
 	}
 
-	public boolean removeMember(String userName, String member, String groupName) {
-		if (isAdmin(userName, groupName) && isMember(member, groupName)) {
-			return db.removeMember(member, groupName);
-		}
-		return false;
+	public boolean removeMember(String member, String groupName) {
+		return db.removeMember(member, groupName);
 	}
 
-	public boolean inviteGroup(String userName, String invitedPerson, String groupName) {
-		if (isMember(userName, groupName) && !isMember(invitedPerson, groupName)) {
-			return db.inviteGroup(invitedPerson, groupName);
-		}
-		return false;
+	public boolean leaveGroup(String userName, String groupName) {
+		return db.removeMember(userName, groupName);
 	}
-	
+
+	public boolean inviteGroup(String invitedPerson, String groupName) {
+		return db.inviteGroup(invitedPerson, groupName);
+	}
+
 	public List<ListOfMembers> listMember(String groupName) {
 		return db.listMember(groupName);
 	}
-} 
+}

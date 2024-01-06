@@ -9,7 +9,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.file.CopyOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -513,9 +512,70 @@ public class ClientHandler implements Runnable {
 					if (new GroupController().isMember(userController.getUserName(),
 							data.get("groupName").getAsString())) {
 						responseObj.setResponseCode(200);
-						responseObj.payload.setListOfMembers(new GroupController().listMember(data.get("groupName").getAsString()));
+						responseObj.payload.setListOfMembers(
+								new GroupController().listMember(data.get("groupName").getAsString()));
 					} else {
 						responseObj.setResponseCode(403);
+						responseObj.setPayload(new EmptyPayload());
+					}
+					out.writeUTF(gson.toJson(responseObj));
+					out.flush();
+					break;
+				case "FOLDER_CONTENT":
+					if (new GroupController().isMember(userController.getUserName(),
+							data.get("groupName").getAsString())) {
+						Path folder = Paths.get(this.currentPath.resolve(data.get("groupName").getAsString())
+								.resolve(data.get("folderName").getAsString()).toString());
+						if (Files.exists(folder)) {
+							responseObj.setResponseCode(200);
+							responseObj.payload.setFolderContents(new FolderController().folderContent(
+									data.get("groupName").getAsString(), data.get("folderName").getAsString()));
+						} else {
+							responseObj.setResponseCode(404);
+							responseObj.setPayload(new EmptyPayload());
+						}
+					} else {
+						responseObj.setResponseCode(403);
+						responseObj.setPayload(new EmptyPayload());
+					}
+					out.writeUTF(gson.toJson(responseObj));
+					out.flush();
+					break;
+				case "REMOVE_MEMBER":
+					if (new GroupController().isAdmin(userController.getUserName(),
+							data.get("groupName").getAsString())) {
+						if (new GroupController().isAdmin(data.get("memberName").getAsString(),
+								data.get("groupName").getAsString())) {
+							if (new GroupController().isMember(data.get("memberName").getAsString(),
+									data.get("groupName").getAsString())) {
+								if (new GroupController().removeMember(data.get("memberName").getAsString(),
+										data.get("groupName").getAsString()))
+									responseObj.setResponseCode(200);
+								else
+									responseObj.setResponseCode(501);
+							} else
+								responseObj.setResponseCode(404);
+						} else
+							responseObj.setResponseCode(400);
+					} else
+						responseObj.setResponseCode(403);
+					out.writeUTF(gson.toJson(responseObj));
+					out.flush();
+					break;
+				case "LEAVE_GROUP":
+					if (new GroupController().isAdmin(userController.getUserName(),
+							data.get("groupName").getAsString())) {
+						responseObj.setResponseCode(403);
+					} else {
+						if (new GroupController().isMember(userController.getUserName(),
+								data.get("groupName").getAsString())) {
+							if (new GroupController().leaveGroup(userController.getUserName(),
+									data.get("groupName").getAsString()))
+								responseObj.setResponseCode(200);
+							else
+								responseObj.setResponseCode(501);
+						} else
+							responseObj.setResponseCode(404);
 					}
 					out.writeUTF(gson.toJson(responseObj));
 					out.flush();
@@ -527,7 +587,6 @@ public class ClientHandler implements Runnable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	public static void trackProgress(long totalFileSize, long byteSend) {
