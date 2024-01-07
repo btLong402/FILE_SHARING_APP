@@ -2,7 +2,7 @@ package helper.response.payload;
 
 import java.util.List;
 
-import models.file_model.FileModel;
+import models.folder_model.FolderContentsModel;
 import models.group_model.GroupModel;
 import models.group_model.ListOfMembers;
 import models.join_model.ListOfAppliedGroups;
@@ -37,6 +37,10 @@ public abstract class BasePayload {
 		
 	}
 	public void setFileName(List<String> fileName) {
+		// TODO Auto-generated method stub
+		
+	}
+	public void setFolderContents(List<FolderContentsModel> folderContents) {
 		// TODO Auto-generated method stub
 		
 	}

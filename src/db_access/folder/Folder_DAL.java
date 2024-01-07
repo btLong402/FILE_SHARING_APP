@@ -1,6 +1,8 @@
 package db_access.folder;
 
 import db_access.db_connection.FTP_Db;
+import models.folder_model.FolderContentsModel;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -108,12 +110,12 @@ public class Folder_DAL {
 
   // when it comes to Folder Move fromGroup,folder_Name,toGroup - we only need to call createFolder(String folder_Name, String toGroup) and deleteFolder(folder_name, fromGroup)
 
-  public List<String> folderContent(String groupName, String folderName) {
-    List<String> fileList = new ArrayList<>();
+  public List<FolderContentsModel> folderContent(String groupName, String folderName) {
+    List<FolderContentsModel> contents = new ArrayList<>();
     try {
       Connection connection = FTP_Db.getConnection();
       String query =
-        "SELECT fName FROM `File` WHERE groupName = ? AND folderName = ?";
+        "SELECT fName, fileSize FROM `File` WHERE groupName = ? AND folderName = ?";
       try (
         PreparedStatement preparedStatement = connection.prepareStatement(query)
       ) {
@@ -122,13 +124,14 @@ public class Folder_DAL {
         try (ResultSet resultSet = preparedStatement.executeQuery()) {
           while (resultSet.next()) {
             String fileName = resultSet.getString("fName");
-            fileList.add(fileName);
+            long fileSize = resultSet.getLong("fileSize");
+            contents.add(new FolderContentsModel(fileName, fileSize));
           }
         }
       }
     } catch (SQLException e) {
       e.printStackTrace();
     }
-    return fileList;
+    return contents;
   }
 }
