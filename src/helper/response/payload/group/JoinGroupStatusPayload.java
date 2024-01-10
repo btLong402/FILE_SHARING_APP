@@ -1,17 +1,19 @@
 package helper.response.payload.group;
-import java.util.ArrayList;
 import java.util.List;
 
 import helper.response.payload.BasePayload;
-import models.join_model.ListOfAppliedGroups;
+import models.join_model.ListOfJoinRequests;
 
 public class JoinGroupStatusPayload extends BasePayload {
-	List<ListOfAppliedGroups> listOfAppliedGroups = new ArrayList<ListOfAppliedGroups>();
+	List<ListOfJoinRequests> listOfAppliedGroups;
 	public JoinGroupStatusPayload() {
 		super();
 	}
 	@Override
-	public void setListOfAppliedGroups(List<ListOfAppliedGroups> listOfAppliedGroups) {
-		this.listOfAppliedGroups = listOfAppliedGroups;
+	public void setListOfJoinRequests(List<ListOfJoinRequests> listOfJoinRequests) {
+		// TODO Auto-generated method stub
+		super.setListOfJoinRequests(listOfJoinRequests);
+		this.listOfAppliedGroups = listOfJoinRequests;
 	}
+	
 }

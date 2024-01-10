@@ -94,7 +94,7 @@ public class Join_DAL {
 		List<ListOfJoinRequests> requestList = new ArrayList<>();
 		try {
 			Connection connection = FTP_Db.getConnection();
-			String query = "SELECT groupName, status, createAt FROM `JoinGroup` WHERE userName = ?;";
+			String query = "SELECT groupName, status, createAt FROM `JoinGroup` WHERE userName = ? and requestType = 'join';";
 			try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 				preparedStatement.setString(1, userName);
 				try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -115,7 +115,7 @@ public class Join_DAL {
 			List<ListOfInvitation> invitationList = new ArrayList<>();
 			try {
 				Connection connection = FTP_Db.getConnection();
-				String query = "SELECT groupName, status, createAt FROM `JoinGroup` WHERE requestType = 'invite' AND userName = ?;";
+				String query = "SELECT groupName, status, createAt FROM `JoinGroup` WHERE requestType = 'invite' and userName = ?;";
 				try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 					preparedStatement.setString(1, userName);
 					try (ResultSet resultSet = preparedStatement.executeQuery()) {
