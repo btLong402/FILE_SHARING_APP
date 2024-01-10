@@ -32,7 +32,7 @@ public class Join_DAL {
 		return false;
 	}
 
-	// request To Join a Group
+	// request To Join a Group 
 	public boolean joinInvitation(String userName, String groupName) {
 		try {
 			Connection connection = FTP_Db.getConnection();
@@ -51,7 +51,7 @@ public class Join_DAL {
 		}
 		return false; 
 	}
-	// Accept to a group
+	// Accept to a group (Check Admin before)
 	public boolean accept(String userName, String groupName) {
 		try {
 			Connection connection = FTP_Db.getConnection();
@@ -70,7 +70,7 @@ public class Join_DAL {
 		}
 		return false; 
 	}
-	//Denied to a group
+	//Denied to a group (Check Admin before)
 	public boolean denied(String userName, String groupName) {
 		try {
 			Connection connection = FTP_Db.getConnection();
@@ -130,13 +130,14 @@ public class Join_DAL {
 			return invitationList;
 		}
 	//Before use this function, please check current user is Admin of groupName (checkIsAdmin function)
-	public List<ListOfApproval> joinRequestList(String groupName) {
+	public List<ListOfApproval> joinRequestList(String userName, String groupName) {
 		List<ListOfApproval> approvalList = new ArrayList<>();
 		try {
 			Connection connection = FTP_Db.getConnection();
-			String query = "SELECT userName, createAt FROM `JoinGroup` WHERE status = 'pending' AND groupName = ?;";
+			String query = "SELECT userName, createAt FROM `JoinGroup` WHERE status = 'pending' AND groupName = ? AND userName = ?;";
 			try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 				preparedStatement.setString(1, groupName);
+				preparedStatement.setString(1, userName);
 				try (ResultSet resultSet = preparedStatement.executeQuery()) {
 					while (resultSet.next()) {
 						approvalList.add(new ListOfApproval(resultSet.getString("userName"), resultSet.getTimestamp("createAt")));
