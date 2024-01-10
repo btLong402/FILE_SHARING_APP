@@ -6,6 +6,7 @@ import models.folder_model.FolderContentsModel;
 import models.group_model.GroupModel;
 import models.group_model.ListOfMembers;
 import models.join_model.ListOfAppliedGroups;
+import models.join_model.ListOfApproval;
 import models.join_model.ListOfInvitation;
 import models.join_model.ListOfJoinRequests;
 
@@ -16,10 +17,10 @@ public abstract class BasePayload {
 	public void setListOfAppliedGroups(List<ListOfAppliedGroups> listOfAppliedGroups) {
 	}
 
-	public void setListOfJoinRequests(List<ListOfJoinRequests> listOfJoinRequests) {
+	public void setListOfJoinRequests(List<ListOfApproval> listOfJoinRequests) {
 		// TODO Auto-generated method stub
 	}
-	public void setListOfInvitation(List<ListOfInvitation> listOfInvitation) {
+	public void setListOfInvitation(List<ListOfJoinRequests> listOfInvitation) {
 		// TODO Auto-generated method stub
 		
 	}

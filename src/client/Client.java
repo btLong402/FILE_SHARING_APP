@@ -11,6 +11,8 @@ import helper.request._request.Request;
 import java.io.*;
 import java.net.*;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 // Client class
@@ -641,12 +643,220 @@ class Client {
 					}
 					break;
 				case "JOIN_GROUP":
+					if (isLogin) {
+						System.out.print("Enter group-name: ");
+						groupName = sc.readLine();
+						requestObj.payload.setGroupName(groupName);
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 200:
+							System.out.println("Reguest successfully!");
+							break;
+						case 404:
+							System.out.println("Group does not exist!");
+							break;
+						case 409:
+							System.out.println("You are a member in group!");
+							break;
+						case 429:
+							System.out.println("Too many request!");
+							break;
+						case 501:
+							System.out.println("Server error!");
+							break;
+						default:
+							break;
+						}
+					} else {
+						System.out.println("You do not have permission to request to join a group. Please log in!");
+					}
 					break;
-				case "JOIN_GROUP_STATUS":
+				case "JOIN_REQUEST_STATUS":
+					if (isLogin) {
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 200:
+							System.out.println("Delete file successfully!");
+							break;
+						case 404:
+							System.out.println("Folder or File does not exist!");
+							break;
+						case 403:
+							System.out.println("You are not a member in group!");
+							break;
+						case 501:
+							System.out.println("Server error!");
+							break;
+						default:
+							break;
+						}
+					} else {
+						System.out.println("Please login to use this function!");
+					}
 					break;
 				case "JOIN_REQUEST_LIST":
+					if (isLogin) {
+						System.out.print("Enter group-name: ");
+						groupName = sc.readLine();
+						requestObj.payload.setGroupName(groupName);
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 200:
+							System.out.println("Delete file successfully!");
+							break;
+						case 404:
+							System.out.println("Folder or File does not exist!");
+							break;
+						case 403:
+							System.out.println("You are not a member in group!");
+							break;
+						case 501:
+							System.out.println("Server error!");
+							break;
+						default:
+							break;
+						}
+					} else {
+						System.out.println("Please login to use this function!");
+					}
 					break;
 				case "INVITE_TO_GROUP":
+					if (isLogin) {
+						System.out.print("Enter group-name: ");
+						groupName = sc.readLine();
+						System.out.print("Enter user-name who you want to invite: ");
+						String invitedName = sc.readLine();
+						requestObj.payload.setGroupName(groupName);
+						requestObj.payload.setInvitedName(invitedName);
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 200:
+							System.out.println("Delete file successfully!");
+							break;
+						case 404:
+							System.out.println("Folder or File does not exist!");
+							break;
+						case 403:
+							System.out.println("You are not a member in group!");
+							break;
+						case 501:
+							System.out.println("Server error!");
+							break;
+						default:
+							break;
+						}
+					} else {
+						System.out.println("Please login to use this function!");
+					}
+					break;
+				case "APPROVAL":
+					if (isLogin) {
+						System.out.print("Enter group-name: ");
+						groupName = sc.readLine();
+						System.out.print("Enter requester: ");
+						String requester = sc.readLine();
+						System.out.print("Decision[YES/NO]: ");
+						String decision = sc.readLine();
+						requestObj.payload.setGroupName(groupName);
+						requestObj.payload.setRequester(requester);
+						boolean isCorrect = true;
+						switch (decision.toUpperCase()) {
+						case "Y":
+						case "YES":
+							requestObj.payload.setDecision("ACCEPT");
+							break;
+						case "N":
+						case "NO":
+							requestObj.payload.setDecision("DENIAL");
+							break;
+						default:
+							isCorrect = false;
+							System.out.println("WRONG DICISION!");
+							break;
+						}
+						if (isCorrect) {
+							rq = gson.toJson(requestObj);
+							out.writeUTF(rq);
+							out.flush();
+							res = in.readUTF();
+							response = gson.fromJson(res, JsonObject.class);
+							System.out.println("Response form server:");
+							System.out.println(res);
+							switch (response.get("responseCode").getAsInt()) {
+							case 200:
+								System.out.println("Delete file successfully!");
+								break;
+							case 404:
+								System.out.println("Folder or File does not exist!");
+								break;
+							case 403:
+								System.out.println("You are not admin of group " + groupName + '!');
+								break;
+							case 501:
+								System.out.println("Server error!");
+								break;
+							default:
+								break;
+							}
+						}
+					} else {
+						System.out.println("Please login to use this function!");
+					}
+					break;
+				case "LIST_INVITATION":
+					if (isLogin) {
+						rq = gson.toJson(requestObj);
+						out.writeUTF(rq);
+						out.flush();
+						res = in.readUTF();
+						response = gson.fromJson(res, JsonObject.class);
+						System.out.println("Response form server:");
+						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 200:
+							JsonArray contentArray = response.getAsJsonObject().getAsJsonObject("payload")
+							.getAsJsonArray("listOfInvitations");
+							printInvitaionList(contentArray);
+							break;
+						case 404:
+							System.out.println("Folder or File does not exist!");
+							break;
+						case 403:
+							System.out.println("You are not a member in group!");
+							break;
+						case 501:
+							System.out.println("Server error!");
+							break;
+						default:
+							break;
+						}
+					} else {
+						System.out.println("Please login to use this function!");
+					}
 					break;
 				case "REMOVE_MEMBER":
 					if (isLogin) {
@@ -862,7 +1072,18 @@ class Client {
 			printTableRow(fileName, sizeInMB);
 		}
 	}
-
+	private static void printInvitaionList(JsonArray list) {
+		System.out.printf("List of Invitation");
+		System.out.println("+----------------------+-----------------+");
+		System.out.printf("| %-20s | %-15s |\n", "Group Name", "Date");
+		System.out.println("+----------------------+-----------------+");
+		for (JsonElement element : list) {
+			JsonObject invite = element.getAsJsonObject();
+			String groupName = invite.get("groupName").getAsString();
+			String date = invite.get("invitedAt").getAsString();
+			printTableRow(groupName, date);
+		}
+	}
 	private static void printTableRow(String column1, String column2) {
 		System.out.printf("| %-20s | %-15s |\n", column1, column2);
 		System.out.println("+----------------------+-----------------+");
@@ -870,7 +1091,17 @@ class Client {
 //	private static double convertBytesToKB(long bytes) {
 //        return bytes / 1024.0; // 1 KB = 1024 bytes
 //    }
+	private static String convertTimestampToString(Timestamp timestamp) {
+        // Create a SimpleDateFormat object with the desired date format
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+        // Convert Timestamp to Date
+        Date date = new Date(timestamp.getTime());
+
+        // Format the Date object to a string
+        return dateFormat.format(date);
+    }
+	
 	private static double convertBytesToMB(long bytes) {
 		return bytes / (1024.0 * 1024.0); // 1 MB = 1024 KB, 1 KB = 1024 bytes
 	}

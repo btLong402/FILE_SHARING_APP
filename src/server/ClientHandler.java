@@ -580,6 +580,81 @@ public class ClientHandler implements Runnable {
 					out.writeUTF(gson.toJson(responseObj));
 					out.flush();
 					break;
+				case "LIST_INVITATION":
+					responseObj.setResponseCode(200);
+					responseObj.payload.setListOfInvitation(new GroupController().listInviteStatus(userController.getUserName()));
+					out.writeUTF(gson.toJson(responseObj));
+					out.flush();
+					break;
+				case "APPROVAL":
+					if (new GroupController().isAdmin(userController.getUserName(),
+							data.get("groupName").getAsString())) {
+						if (data.get("decision").getAsString().equals("ACCEPT")) {
+							if (new GroupController().accept(data.get("requester").getAsString(),
+									data.get("groupName").getAsString()))
+								responseObj.setResponseCode(200);
+							else
+								responseObj.setResponseCode(400);
+						} else {
+							if (new GroupController().denied(data.get("requester").getAsString(),
+									data.get("groupName").getAsString()))
+								responseObj.setResponseCode(200);
+							else
+								responseObj.setResponseCode(400);
+						}
+					} else
+						responseObj.setResponseCode(403);
+					out.writeUTF(gson.toJson(responseObj));
+					out.flush();
+					break;
+				case "INVITE_TO_GROUP":
+					if(new GroupController().isMember(userController.getUserName(), data.get("groupName").getAsString())) {
+						if(new GroupController().isMember(data.get("invitedUsername").getAsString(), data.get("groupName").getAsString())) {
+							responseObj.setResponseCode(409);
+						}
+						else {
+							if(new GroupController().inviteGroup(data.get("invitedUsername").getAsString(), data.get("groupName").getAsString())) {
+								responseObj.setResponseCode(200);
+							}
+							else {
+								responseObj.setResponseCode(400);
+							}
+						}
+					}
+					else {
+						responseObj.setResponseCode(403);
+					}
+					out.writeUTF(gson.toJson(responseObj));
+					out.flush();
+					break;
+				case "JOIN_REQUEST_LIST":
+					responseObj.setResponseCode(200);
+					responseObj.payload.setListOfJoinRequests(new GroupController().listRequestList(userController.getUserName()));
+					out.writeUTF(gson.toJson(responseObj));
+					out.flush();
+					break;
+				case "JOIN_REQUEST_STATUS":
+					responseObj.setResponseCode(200);
+					responseObj.payload.setListOfJoinRequests(
+							new GroupController().listRequestStatus(userController.getUserName()));
+					out.writeUTF(gson.toJson(responseObj));
+					out.flush();
+					break;
+				case "JOIN_GROUP":
+					if (new GroupController().isMember(userController.getUserName(),
+							data.get("groupName").getAsString())) {
+						responseObj.setResponseCode(409);
+					} else {
+						if (new GroupController().requestJoin(userController.getUserName(),
+								data.get("groupName").getAsString())) {
+							responseObj.setResponseCode(200);
+						} else {
+							responseObj.setResponseCode(429);
+						}
+					}
+					out.writeUTF(gson.toJson(responseObj));
+					out.flush();
+					break;
 				default:
 					break;
 				}

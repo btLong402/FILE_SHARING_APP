@@ -90,12 +90,13 @@ public class Join_DAL {
 		return false; 
 	}
 	// List of Request to Join Group
-	public List<ListOfJoinRequests> joinRequestStatus() {
+	public List<ListOfJoinRequests> joinRequestStatus(String userName) {
 		List<ListOfJoinRequests> requestList = new ArrayList<>();
 		try {
 			Connection connection = FTP_Db.getConnection();
-			String query = "SELECT groupName, status, createAt FROM `JoinGroup`;";
+			String query = "SELECT groupName, status, createAt FROM `JoinGroup` WHERE userName = ? and requestType = 'join';";
 			try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+				preparedStatement.setString(1, userName);
 				try (ResultSet resultSet = preparedStatement.executeQuery()) {
 					while (resultSet.next()) {
 						requestList.add(new ListOfJoinRequests(resultSet.getString("groupName"), 
@@ -110,12 +111,13 @@ public class Join_DAL {
 	}
 	
 	// List of Invitation to Join Group
-		public List<ListOfInvitation> listOfInvitationList() {
+		public List<ListOfInvitation> listOfInvitationList(String userName) {
 			List<ListOfInvitation> invitationList = new ArrayList<>();
 			try {
 				Connection connection = FTP_Db.getConnection();
-				String query = "SELECT groupName, status, createAt FROM `JoinGroup` WHERE requestType = 'invite';";
+				String query = "SELECT groupName, status, createAt FROM `JoinGroup` WHERE requestType = 'invite' and userName = ?;";
 				try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+					preparedStatement.setString(1, userName);
 					try (ResultSet resultSet = preparedStatement.executeQuery()) {
 						while (resultSet.next()) {
 							invitationList.add(new ListOfInvitation(resultSet.getString("groupName"), resultSet.getString("status"), resultSet. getTimestamp("createAt")));

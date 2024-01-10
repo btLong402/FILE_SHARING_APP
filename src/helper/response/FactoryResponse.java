@@ -71,7 +71,7 @@ public class FactoryResponse {
 			return new Response(new ListAllGroupPayload());
 		case "CREATE_FOLDER":
 			return new Response(new CreateFolderPayload());
-		case "JOIN_GROUP_STATUS":
+		case "JOIN_REQUEST_STATUS":
 			return new Response(new JoinGroupStatusPayload());
 		case "JOIN_REQUEST_LIST":
 			return new Response(new JoinRequestListPayload());

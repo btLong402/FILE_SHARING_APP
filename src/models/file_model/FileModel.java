@@ -1,18 +1,11 @@
 package models.file_model;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-
 public class FileModel {
-	private String fileId;
 	private String fileName;
 	private String fileType;
 	private long fileSize;
 	private String groupName;
 	private String folderName;
-	private String uploadAt;
-	private String updateAt;
 
 	public FileModel(String fileName, String fileType, long fileSize, String groupName, String folderName) {
 		super();
@@ -85,10 +78,6 @@ public class FileModel {
 //		this.uploadAt = uploadAt;
 //	}
 //
-	public String getUpdateAt() {
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
-		return dateFormat.format(updateAt);
-	}
 //
 //	public void setUpdateAt(LocalDateTime updateAt) {
 //		this.updateAt = updateAt;
