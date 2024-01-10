@@ -6,8 +6,10 @@ import db_access.group.Group_DAL;
 import db_access.join.Join_DAL;
 import models.group_model.GroupModel;
 import models.group_model.ListOfMembers;
-import models.join_model.ListOfApproval;
-import models.join_model.ListOfJoinRequests;
+import models.join_model.JoinRequestList;
+import models.join_model.JoinRequestStatus;
+import models.join_model.ListOfInvitation;
+import models.group_model.GroupModel;
 
 public class GroupController {
 	private Join_DAL j_db = new Join_DAL();
@@ -61,15 +63,15 @@ public class GroupController {
 		return j_db.denied(userName, groupName);
 	}
 	
-	public List<ListOfJoinRequests> listRequestStatus(String userName){
+	public List<JoinRequestStatus> listRequestStatus(String userName){
 		return j_db.joinRequestStatus(userName);
 	}
 	
-	public List<ListOfJoinRequests> listInviteStatus(String userName){
-		return j_db.joinRequestStatus(userName);
+	public List<ListOfInvitation> listInviteStatus(String userName){
+		return j_db.listOfInvitationList(userName);
 	}
 	
-	public List<ListOfApproval> listRequestList(String userName){
-		return j_db.joinRequestList(userName);
+	public List<JoinRequestList> listRequestList(String groupName){
+		return j_db.joinRequestList(groupName); 
 	}
 }

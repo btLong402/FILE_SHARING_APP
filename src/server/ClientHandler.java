@@ -545,7 +545,7 @@ public class ClientHandler implements Runnable {
 					if (new GroupController().isAdmin(userController.getUserName(),
 							data.get("groupName").getAsString())) {
 						if (new GroupController().isAdmin(data.get("memberName").getAsString(),
-								data.get("groupName").getAsString())) {
+								data.get("groupName").getAsString())) { // Can't understand
 							if (new GroupController().isMember(data.get("memberName").getAsString(),
 									data.get("groupName").getAsString())) {
 								if (new GroupController().removeMember(data.get("memberName").getAsString(),
@@ -582,7 +582,8 @@ public class ClientHandler implements Runnable {
 					break;
 				case "LIST_INVITATION":
 					responseObj.setResponseCode(200);
-					responseObj.payload.setListOfInvitation(new GroupController().listInviteStatus(userController.getUserName()));
+					responseObj.payload
+							.setListOfInvitation(new GroupController().listInviteStatus(userController.getUserName()));
 					out.writeUTF(gson.toJson(responseObj));
 					out.flush();
 					break;
@@ -608,20 +609,20 @@ public class ClientHandler implements Runnable {
 					out.flush();
 					break;
 				case "INVITE_TO_GROUP":
-					if(new GroupController().isMember(userController.getUserName(), data.get("groupName").getAsString())) {
-						if(new GroupController().isMember(data.get("invitedUsername").getAsString(), data.get("groupName").getAsString())) {
+					if (new GroupController().isMember(userController.getUserName(),
+							data.get("groupName").getAsString())) {
+						if (new GroupController().isMember(data.get("invitedUsername").getAsString(),
+								data.get("groupName").getAsString())) {
 							responseObj.setResponseCode(409);
-						}
-						else {
-							if(new GroupController().inviteGroup(data.get("invitedUsername").getAsString(), data.get("groupName").getAsString())) {
+						} else {
+							if (new GroupController().inviteGroup(data.get("invitedUsername").getAsString(),
+									data.get("groupName").getAsString())) {
 								responseObj.setResponseCode(200);
-							}
-							else {
-								responseObj.setResponseCode(400);
+							} else {
+								responseObj.setResponseCode(400); // 400 la gi???
 							}
 						}
-					}
-					else {
+					} else {
 						responseObj.setResponseCode(403);
 					}
 					out.writeUTF(gson.toJson(responseObj));
@@ -629,32 +630,37 @@ public class ClientHandler implements Runnable {
 					break;
 				case "JOIN_REQUEST_LIST":
 					responseObj.setResponseCode(200);
-					responseObj.payload.setListOfJoinRequests(new GroupController().listRequestList(userController.getUserName()));
+					if (new GroupController().isAdmin(userController.getUserName(),
+							data.get("groupName").getAsString())) {
+						responseObj.payload.setJoinRequestList(
+								new GroupController().listRequestList(data.get("groupName").getAsString()));
+					} else
+						responseObj.setResponseCode(403);
 					out.writeUTF(gson.toJson(responseObj));
 					out.flush();
 					break;
 				case "JOIN_REQUEST_STATUS":
 					responseObj.setResponseCode(200);
-					responseObj.payload.setListOfJoinRequests(
+					responseObj.payload.setJoinRequestStatus(
 							new GroupController().listRequestStatus(userController.getUserName()));
 					out.writeUTF(gson.toJson(responseObj));
 					out.flush();
 					break;
-				case "JOIN_GROUP":
-					if (new GroupController().isMember(userController.getUserName(),
-							data.get("groupName").getAsString())) {
-						responseObj.setResponseCode(409);
-					} else {
-						if (new GroupController().requestJoin(userController.getUserName(),
-								data.get("groupName").getAsString())) {
-							responseObj.setResponseCode(200);
-						} else {
-							responseObj.setResponseCode(429);
-						}
-					}
-					out.writeUTF(gson.toJson(responseObj));
-					out.flush();
-					break;
+//				case "JOIN_GROUP":
+//					if (new GroupController().isMember(userController.getUserName(),
+//							data.get("groupName").getAsString())) {
+//						responseObj.setResponseCode(409);
+//					} else {
+//						if (new GroupController().requestJoin(userController.getUserName(),
+//								data.get("groupName").getAsString())) {
+//							responseObj.setResponseCode(200);
+//						} else {
+//							responseObj.setResponseCode(429);
+//						}
+//					}
+//					out.writeUTF(gson.toJson(responseObj));
+//					out.flush();
+//					break;
 				default:
 					break;
 				}

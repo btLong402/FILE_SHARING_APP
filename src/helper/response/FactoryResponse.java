@@ -72,7 +72,7 @@ public class FactoryResponse {
 		case "CREATE_FOLDER":
 			return new Response(new CreateFolderPayload());
 		case "JOIN_REQUEST_STATUS":
-			return new Response(new JoinGroupStatusPayload());
+			return new Response(new JoinRequestStatusPayload());
 		case "JOIN_REQUEST_LIST":
 			return new Response(new JoinRequestListPayload());
 		default:

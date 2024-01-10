@@ -2,7 +2,7 @@ package models.join_model;
 
 import java.sql.Timestamp;
 
-public class ListOfJoinRequests {
+public class JoinRequestStatus {
 	private String groupName;
 	private String status;
 	private Timestamp requestAt;
@@ -26,7 +26,7 @@ public class ListOfJoinRequests {
 		this.requestAt = requestAt;
 	}
 	// shift + alt + s
-	public ListOfJoinRequests(String groupName, String status, Timestamp requestAt) {
+	public JoinRequestStatus(String groupName, String status, Timestamp requestAt) {
 		super();
 		this.groupName = groupName;
 		this.status = status;

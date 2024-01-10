@@ -1,7 +1,7 @@
 package models.join_model;
 import java.sql.Timestamp;
 
-public class ListOfApproval {
+public class JoinRequestList {
 	private String userName;
 	private Timestamp requestAt;
 	
@@ -19,7 +19,7 @@ public class ListOfApproval {
 		this.requestAt = requestAt;
 	}
 	// shift + alt + s
-	public ListOfApproval(String userName, Timestamp requestAt) {
+	public JoinRequestList(String userName, Timestamp requestAt) {
 		super();
 		this.userName = userName;
 		this.requestAt = requestAt;

@@ -2,7 +2,7 @@ package models.group_model;
 
 public class GroupModel {
 	private String groupName;
-
+	
 	public GroupModel(String groupName) {
 		super();
 		this.groupName = groupName;
