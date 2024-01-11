@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -29,6 +30,9 @@ import controllers.user_controller.UserController;
 import helper.response.FactoryResponse;
 import helper.response._response.Response;
 import helper.response.payload.EmptyPayload;
+import models.join_model.JoinRequestList;
+import models.join_model.JoinRequestStatus;
+import models.join_model.ListOfInvitation;
 
 public class ClientHandler implements Runnable {
 	private final Socket clientSocket;
@@ -545,7 +549,7 @@ public class ClientHandler implements Runnable {
 					if (new GroupController().isAdmin(userController.getUserName(),
 							data.get("groupName").getAsString())) {
 						if (new GroupController().isAdmin(data.get("memberName").getAsString(),
-								data.get("groupName").getAsString())) { // Can't understand
+								data.get("groupName").getAsString()) == false) { // Can't understand
 							if (new GroupController().isMember(data.get("memberName").getAsString(),
 									data.get("groupName").getAsString())) {
 								if (new GroupController().removeMember(data.get("memberName").getAsString(),
@@ -580,10 +584,17 @@ public class ClientHandler implements Runnable {
 					out.writeUTF(gson.toJson(responseObj));
 					out.flush();
 					break;
-				case "LIST_INVITATION":
-					responseObj.setResponseCode(200);
-					responseObj.payload
-							.setListOfInvitation(new GroupController().listInviteStatus(userController.getUserName()));
+				case "LIST_OF_INVITATION":
+					
+					List<ListOfInvitation> list = new GroupController().listInviteStatus(userController.getUserName());
+					if(list.isEmpty()) {
+						responseObj.setResponseCode(201);
+					}
+					else {
+						responseObj.setResponseCode(200);
+						responseObj.payload
+						.setListOfInvitation(list);
+					}
 					out.writeUTF(gson.toJson(responseObj));
 					out.flush();
 					break;
@@ -611,11 +622,11 @@ public class ClientHandler implements Runnable {
 				case "INVITE_TO_GROUP":
 					if (new GroupController().isMember(userController.getUserName(),
 							data.get("groupName").getAsString())) {
-						if (new GroupController().isMember(data.get("invitedUsername").getAsString(),
+						if (new GroupController().isMember(data.get("invitedUserName").getAsString(),
 								data.get("groupName").getAsString())) {
 							responseObj.setResponseCode(409);
 						} else {
-							if (new GroupController().inviteGroup(data.get("invitedUsername").getAsString(),
+							if (new GroupController().inviteGroup(data.get("invitedUserName").getAsString(),
 									data.get("groupName").getAsString())) {
 								responseObj.setResponseCode(200);
 							} else {
@@ -629,38 +640,50 @@ public class ClientHandler implements Runnable {
 					out.flush();
 					break;
 				case "JOIN_REQUEST_LIST":
-					responseObj.setResponseCode(200);
 					if (new GroupController().isAdmin(userController.getUserName(),
 							data.get("groupName").getAsString())) {
-						responseObj.payload.setJoinRequestList(
-								new GroupController().listRequestList(data.get("groupName").getAsString()));
+						List<JoinRequestList> listRq = new GroupController().listRequestList(data.get("groupName").getAsString());
+						if(listRq.isEmpty()) {
+							responseObj.setResponseCode(201);
+						}
+						else {
+							responseObj.setResponseCode(200);
+							responseObj.payload.setJoinRequestList(
+									listRq);
+						}
 					} else
 						responseObj.setResponseCode(403);
 					out.writeUTF(gson.toJson(responseObj));
 					out.flush();
 					break;
 				case "JOIN_REQUEST_STATUS":
-					responseObj.setResponseCode(200);
-					responseObj.payload.setJoinRequestStatus(
-							new GroupController().listRequestStatus(userController.getUserName()));
+					List<JoinRequestStatus> listRqStatus = new GroupController().listRequestStatus(userController.getUserName());
+					if(listRqStatus.isEmpty()) {
+						responseObj.setResponseCode(201);
+					}
+					else {
+						responseObj.setResponseCode(200);
+						responseObj.payload.setJoinRequestStatus(
+								listRqStatus);
+					}
 					out.writeUTF(gson.toJson(responseObj));
 					out.flush();
 					break;
-//				case "JOIN_GROUP":
-//					if (new GroupController().isMember(userController.getUserName(),
-//							data.get("groupName").getAsString())) {
-//						responseObj.setResponseCode(409);
-//					} else {
-//						if (new GroupController().requestJoin(userController.getUserName(),
-//								data.get("groupName").getAsString())) {
-//							responseObj.setResponseCode(200);
-//						} else {
-//							responseObj.setResponseCode(429);
-//						}
-//					}
-//					out.writeUTF(gson.toJson(responseObj));
-//					out.flush();
-//					break;
+				case "JOIN_GROUP":
+					if (new GroupController().isMember(userController.getUserName(),
+							data.get("groupName").getAsString())) {
+						responseObj.setResponseCode(409);
+					} else {
+						if (new GroupController().requestJoin(userController.getUserName(),
+								data.get("groupName").getAsString())) {
+							responseObj.setResponseCode(200);
+						} else {
+							responseObj.setResponseCode(429);
+						}
+					}
+					out.writeUTF(gson.toJson(responseObj));
+					out.flush();
+					break;
 				default:
 					break;
 				}

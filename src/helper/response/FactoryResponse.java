@@ -33,7 +33,7 @@ public class FactoryResponse {
 			return new Response(new ApprovalPayload());
 		case "INVITE_TO_GROUP":
 			return new Response(new InviteToGroupPayload());
-		case "LIST_OF_INVITAION":
+		case "LIST_OF_INVITATION":
 			return new Response(new ListOfInvitationPayload());
 		case "LEAVE_GROUP":
 			return new Response(new LeaveGroupPayload());

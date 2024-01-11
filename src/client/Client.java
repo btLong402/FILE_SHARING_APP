@@ -685,16 +685,22 @@ class Client {
 						response = gson.fromJson(res, JsonObject.class);
 						System.out.println("Response form server:");
 						System.out.println(res);
-						if (response.get("responseCode").getAsInt() == 200) {
+						switch (response.get("responseCode").getAsInt()) {
+						case 200:
 							JsonArray joinRequestStatusArray = response.getAsJsonObject().getAsJsonObject("payload")
-									.getAsJsonArray("listOfAppliedGroups");
-							printJoinRequestStatus(joinRequestStatusArray);
-						
+							.getAsJsonArray("listOfAppliedGroups");
+					printJoinRequestStatus(joinRequestStatusArray);
+							break;
+						case 403:
+							System.out.println("You are not an admin of group!");
+							break;
+						case 201:
+							System.out.println("You do not have any request!");
+							break;
+						default:
+							System.out.println("You are not an admin in group!");
+							break;
 						}
-						else {
-							System.out.println("Error!");
-						}
-
 					} else {
 						System.out.println("You do not have permission to see list groups. Please log in!");
 					}
@@ -720,6 +726,9 @@ class Client {
 							break;
 						case 403:
 							System.out.println("You are not an admin of group!");
+							break;
+						case 201:
+							System.out.println("Group does not have any request!");
 							break;
 						default:
 							System.out.println("You are not an admin in group!");
@@ -826,12 +835,23 @@ class Client {
 						response = gson.fromJson(res, JsonObject.class);
 						System.out.println("Response form server:");
 						System.out.println(res);
+						switch (response.get("responseCode").getAsInt()) {
+						case 200:
+							JsonArray listOfInvitations = response.getAsJsonObject().getAsJsonObject("payload")
+							.getAsJsonArray("listOfInvitation");
+					printInvitaionList(listOfInvitations);
+							break;
+
+						default:
+							System.out.println("You do not have any invitation!");
+							break;
+						}
 					} else {
 						System.out.println("You do not have permission to see list groups. Please log in!");
 					}
 					break;
 				case "REMOVE_MEMBER":
-					if (isLogin) {
+					if (!isLogin) {
 						System.out.println("You do not have permission to create a group. Please log in.");
 					} else {
 						System.out.print("Enter group-name: ");
@@ -1048,15 +1068,16 @@ class Client {
 	}
 
 	private static void printInvitaionList(JsonArray list) {
-		System.out.printf("List of Invitation");
-		System.out.println("+----------------------+---------------------------+");
-		System.out.printf("| %-20s | %-25s |\n", "Group Name", "Date");
-		System.out.println("+----------------------+---------------------------+");
+		System.out.println("List of Invitation");
+		System.out.println("+------------+------------+--------------------------------+");
+		System.out.printf("| %-10s | %-10s | %-30s |\n", "groupName", "status", "requestAt");
+		System.out.println("+------------+------------+--------------------------------+");
 		for (JsonElement element : list) {
 			JsonObject invite = element.getAsJsonObject();
 			String groupName = invite.get("groupName").getAsString();
-			String date = invite.get("createAt").getAsString();
-			printTableRow(groupName, date);
+			String status = invite.get("status").getAsString();
+			String date = invite.get("inviteAt").getAsString();
+			printTable3Row(groupName, status ,date);
 		}
 	}
 

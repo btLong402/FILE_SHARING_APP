@@ -50,7 +50,7 @@ public class FactoryRequest {
 			return new Request(messageType, new RemoveMemberPayload());
 		case "CREATE_FOLDER":
 			return new Request(messageType, new CreateFolderPayload());
-		case "JION_GROUP":
+		case "JOIN_GROUP":
 			return new Request(messageType, new JoinGroupPayload());
 		case "INVITE_TO_GROUP":
 			return new Request(messageType, new InviteGroupPayload());
