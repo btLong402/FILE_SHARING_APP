@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import db_access.db_connection.FTP_Db;
-import models.join_model.ListOfJoinRequests;
+import models.join_model.JoinRequestStatus;
 import models.join_model.ListOfInvitation;
-import models.join_model.ListOfApproval;
+import models.join_model.JoinRequestList;
 public class Join_DAL {
 	// request To Join a Group
 	public boolean joinRequest(String userName, String groupName) {
@@ -32,7 +32,7 @@ public class Join_DAL {
 		return false;
 	}
 
-	// request To Join a Group
+	// request To Join a Group 
 	public boolean joinInvitation(String userName, String groupName) {
 		try {
 			Connection connection = FTP_Db.getConnection();
@@ -51,7 +51,7 @@ public class Join_DAL {
 		}
 		return false; 
 	}
-	// Accept to a group
+	// Accept to a group (Check Admin before)
 	public boolean accept(String userName, String groupName) {
 		try {
 			Connection connection = FTP_Db.getConnection();
@@ -70,7 +70,7 @@ public class Join_DAL {
 		}
 		return false; 
 	}
-	//Denied to a group
+	//Denied to a group (Check Admin before)
 	public boolean denied(String userName, String groupName) {
 		try {
 			Connection connection = FTP_Db.getConnection();
@@ -90,15 +90,16 @@ public class Join_DAL {
 		return false; 
 	}
 	// List of Request to Join Group
-	public List<ListOfJoinRequests> joinRequestStatus() {
-		List<ListOfJoinRequests> requestList = new ArrayList<>();
+	public List<JoinRequestStatus> joinRequestStatus(String userName) {
+		List<JoinRequestStatus> requestList = new ArrayList<>();
 		try {
 			Connection connection = FTP_Db.getConnection();
-			String query = "SELECT groupName, status, createAt FROM `JoinGroup`;";
+			String query = "SELECT groupName, status, createAt FROM `JoinGroup` WHERE userName = ? and requestType = 'join';";
 			try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+				preparedStatement.setString(1, userName);
 				try (ResultSet resultSet = preparedStatement.executeQuery()) {
 					while (resultSet.next()) {
-						requestList.add(new ListOfJoinRequests(resultSet.getString("groupName"), 
+						requestList.add(new JoinRequestStatus(resultSet.getString("groupName"), 
 								resultSet.getString("status"), resultSet. getTimestamp("createAt")));
 					}
 				}
@@ -110,12 +111,13 @@ public class Join_DAL {
 	}
 	
 	// List of Invitation to Join Group
-		public List<ListOfInvitation> listOfInvitationList() {
+		public List<ListOfInvitation> listOfInvitationList(String userName) {
 			List<ListOfInvitation> invitationList = new ArrayList<>();
 			try {
 				Connection connection = FTP_Db.getConnection();
-				String query = "SELECT groupName, status, createAt FROM `JoinGroup` WHERE requestType = 'invite';";
+				String query = "SELECT groupName, status, createAt FROM `JoinGroup` WHERE requestType = 'invite' and userName = ?;";
 				try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+					preparedStatement.setString(1, userName);
 					try (ResultSet resultSet = preparedStatement.executeQuery()) {
 						while (resultSet.next()) {
 							invitationList.add(new ListOfInvitation(resultSet.getString("groupName"), resultSet.getString("status"), resultSet. getTimestamp("createAt")));
@@ -128,8 +130,8 @@ public class Join_DAL {
 			return invitationList;
 		}
 	//Before use this function, please check current user is Admin of groupName (checkIsAdmin function)
-	public List<ListOfApproval> joinRequestList(String groupName) {
-		List<ListOfApproval> approvalList = new ArrayList<>();
+	public List<JoinRequestList> joinRequestList(String groupName) {
+		List<JoinRequestList> approvalList = new ArrayList<>();
 		try {
 			Connection connection = FTP_Db.getConnection();
 			String query = "SELECT userName, createAt FROM `JoinGroup` WHERE status = 'pending' AND groupName = ?;";
@@ -137,7 +139,7 @@ public class Join_DAL {
 				preparedStatement.setString(1, groupName);
 				try (ResultSet resultSet = preparedStatement.executeQuery()) {
 					while (resultSet.next()) {
-						approvalList.add(new ListOfApproval(resultSet.getString("userName"), resultSet.getTimestamp("createAt")));
+						approvalList.add(new JoinRequestList(resultSet.getString("userName"), resultSet.getTimestamp("createAt")));
 					}
 				}
 			}

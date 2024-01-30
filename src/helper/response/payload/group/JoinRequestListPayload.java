@@ -1,14 +1,13 @@
 package helper.response.payload.group;
-import java.util.ArrayList;
 import java.util.List;
 
 import helper.response.payload.BasePayload;
-import models.join_model.ListOfJoinRequests;
+import models.join_model.JoinRequestList;
 
 public class JoinRequestListPayload extends BasePayload {
-	List<ListOfJoinRequests> listOfJoinRequests = new ArrayList<ListOfJoinRequests>();
+	List<JoinRequestList> joinRequestList;
 	@Override
-	public void setListOfJoinRequests(List<ListOfJoinRequests> listOfJoinRequests) {
-		this.listOfJoinRequests = listOfJoinRequests;
+	public void setJoinRequestList(List<JoinRequestList> listOfJoinRequests) {
+		this.joinRequestList = listOfJoinRequests;
 	}
 }

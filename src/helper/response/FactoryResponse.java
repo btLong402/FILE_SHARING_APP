@@ -33,7 +33,7 @@ public class FactoryResponse {
 			return new Response(new ApprovalPayload());
 		case "INVITE_TO_GROUP":
 			return new Response(new InviteToGroupPayload());
-		case "LIST_OF_INVITAION":
+		case "LIST_OF_INVITATION":
 			return new Response(new ListOfInvitationPayload());
 		case "LEAVE_GROUP":
 			return new Response(new LeaveGroupPayload());
@@ -71,8 +71,8 @@ public class FactoryResponse {
 			return new Response(new ListAllGroupPayload());
 		case "CREATE_FOLDER":
 			return new Response(new CreateFolderPayload());
-		case "JOIN_GROUP_STATUS":
-			return new Response(new JoinGroupStatusPayload());
+		case "JOIN_REQUEST_STATUS":
+			return new Response(new JoinRequestStatusPayload());
 		case "JOIN_REQUEST_LIST":
 			return new Response(new JoinRequestListPayload());
 		default:

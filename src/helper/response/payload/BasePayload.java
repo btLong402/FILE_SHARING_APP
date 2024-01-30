@@ -5,19 +5,21 @@ import java.util.List;
 import models.folder_model.FolderContentsModel;
 import models.group_model.GroupModel;
 import models.group_model.ListOfMembers;
-import models.join_model.ListOfAppliedGroups;
+import models.join_model.JoinRequestList;
 import models.join_model.ListOfInvitation;
-import models.join_model.ListOfJoinRequests;
+import models.join_model.JoinRequestStatus;
 
 public abstract class BasePayload {
 	public void setFileName(String fileName) {}
 	public void setFileSize(long fileSize) {}
 	public void setListGroups(List<GroupModel> listGroups) {}
-	public void setListOfAppliedGroups(List<ListOfAppliedGroups> listOfAppliedGroups) {
-	}
 
-	public void setListOfJoinRequests(List<ListOfJoinRequests> listOfJoinRequests) {
+	public void setJoinRequestList(List<JoinRequestList> joinRequestList) {
 		// TODO Auto-generated method stub
+	}
+	public void setJoinRequestStatus(List<JoinRequestStatus> joinRequestStatus) {
+		// TODO Auto-generated method stub
+		
 	}
 	public void setListOfInvitation(List<ListOfInvitation> listOfInvitation) {
 		// TODO Auto-generated method stub

@@ -1,9 +1,12 @@
 package models.join_model;
 
-public class ListOfAppliedGroups {
+import java.sql.Timestamp;
+
+public class JoinRequestStatus {
 	private String groupName;
 	private String status;
-	private String requestAt;
+	private Timestamp requestAt;
+	
 	public String getGroupName() {
 		return groupName;
 	}
@@ -16,10 +19,17 @@ public class ListOfAppliedGroups {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	public String getRequestAt() {
+	public Timestamp getRequestAt() {
 		return requestAt;
 	}
-	public void setRequestAt(String requestAt) {
+	public void setRequestAt(Timestamp requestAt) {
+		this.requestAt = requestAt;
+	}
+	// shift + alt + s
+	public JoinRequestStatus(String groupName, String status, Timestamp requestAt) {
+		super();
+		this.groupName = groupName;
+		this.status = status;
 		this.requestAt = requestAt;
 	}
 	

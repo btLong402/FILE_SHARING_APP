@@ -13,6 +13,7 @@ import helper.request.payload.folder.FolderCopyPayload;
 import helper.request.payload.folder.FolderDeletePayload;
 import helper.request.payload.folder.FolderMovePayload;
 import helper.request.payload.folder.FolderRenamePayload;
+import helper.request.payload.group.ApprovalPayload;
 import helper.request.payload.group.CreateGroupPayload;
 import helper.request.payload.group.InviteGroupPayload;
 import helper.request.payload.group.JoinGroupPayload;
@@ -20,6 +21,9 @@ import helper.request.payload.group.LeaveGroupPayload;
 import helper.request.payload.group.ListAllGroupPayload;
 import helper.request.payload.group.ListGroupMemberPayload;
 import helper.request.payload.group.ListGroupPayload;
+import helper.request.payload.group.ListInvitationPayload;
+import helper.request.payload.group.ListRequestPayload;
+import helper.request.payload.group.ListRequestStatusPayload;
 import helper.request.payload.group.RemoveMemberPayload;
 import helper.request.payload.login.LoginPayload;
 import helper.request.payload.register.RegisterPayload;
@@ -46,7 +50,7 @@ public class FactoryRequest {
 			return new Request(messageType, new RemoveMemberPayload());
 		case "CREATE_FOLDER":
 			return new Request(messageType, new CreateFolderPayload());
-		case "JION_GROUP":
+		case "JOIN_GROUP":
 			return new Request(messageType, new JoinGroupPayload());
 		case "INVITE_TO_GROUP":
 			return new Request(messageType, new InviteGroupPayload());
@@ -76,6 +80,14 @@ public class FactoryRequest {
 			return new Request(messageType, new FileRenamePayload());
 		case "FILE_DELETE":
 			return new Request(messageType, new FileDeletePayload());
+		case "JOIN_REQUEST_STATUS":
+			return new Request(messageType, new ListRequestStatusPayload());
+		case "JOIN_REQUEST_LIST":
+			return new Request(messageType, new ListRequestPayload());
+		case "LIST_INVITATION":
+			return new Request("LIST_OF_INVITATION", new ListInvitationPayload());
+		case "APPROVAL":
+			return new Request(messageType, new ApprovalPayload());
 		default:
 			break;
 		}
